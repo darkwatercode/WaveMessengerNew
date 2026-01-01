@@ -1,104 +1,225 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>WaveMessenger - Общение в реальном времени</title>
+    <title>🌊 WaveMessenger Pro - AI Мессенджер</title>
+    
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
     <link rel="stylesheet" href="style.css">
-    <script src="/socket.io/socket.io.js"></script>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌊</text></svg>">
 </head>
 <body>
-    <!-- Приветственная страница -->
+    <!-- Контейнер для частиц -->
+    <div class="particles-container"></div>
+    
+    <!-- Уведомления -->
+    <div id="notificationContainer" class="notifications-container"></div>
+    
+    <!-- ========== ПРИВЕТСТВЕННАЯ СТРАНИЦА ========== -->
     <div id="welcomePage" class="page active">
-        <div class="welcome-container">
-            <div class="logo">
-                <i class="fas fa-water"></i>
-                <h1>WaveMessenger</h1>
+        <div class="welcome-overlay"></div>
+        <div class="welcome-content">
+            <!-- Анимированный логотип -->
+            <div class="logo-hero">
+                <div class="logo-icon">
+                    <i class="fas fa-water"></i>
+                </div>
+                <h1 class="logo-text">
+                    <span class="logo-gradient">Wave</span>Messenger <span class="version-badge">Pro 3.0</span>
+                </h1>
+                <p class="logo-subtitle">AI-мессенджер нового поколения</p>
             </div>
             
-            <div class="tagline">
-                <h2>Общайтесь волнами в реальном времени</h2>
-                <p>Новый мессенджер с каналами, постами и настоящим общением между пользователями</p>
+            <!-- Основные функции -->
+            <div class="features-grid">
+                <div class="feature-card" data-aos="fade-up">
+                    <div class="feature-icon ai-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h3>🤖 WaveAI</h3>
+                    <p>Умный ассистент с Google Gemini. Отвечает на вопросы, генерирует изображения, шутит</p>
+                    <div class="feature-badges">
+                        <span class="badge">/ai</span>
+                        <span class="badge">/img</span>
+                        <span class="badge">/joke</span>
+                    </div>
+                </div>
+                
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="feature-icon chat-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h3>💬 Реальное время</h3>
+                    <p>Мгновенные сообщения, голосовые, реакции и ответы. WebSocket соединение</p>
+                    <div class="feature-badges">
+                        <span class="badge">WebSocket</span>
+                        <span class="badge">Realtime</span>
+                    </div>
+                </div>
+                
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="feature-icon admin-icon">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    <h3>👑 Админ-панель</h3>
+                    <p>Специальный доступ для yakadev. Статистика, модерация, анонсы</p>
+                    <div class="feature-badges">
+                        <span class="badge badge-admin">Admin</span>
+                        <span class="badge">Moderation</span>
+                    </div>
+                </div>
+                
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="feature-icon design-icon">
+                        <i class="fas fa-palette"></i>
+                    </div>
+                    <h3>🎨 Имба дизайн</h3>
+                    <p>Анимации, градиенты, тёмная тема, адаптивность. Красиво на всех устройствах</p>
+                    <div class="feature-badges">
+                        <span class="badge">Animations</span>
+                        <span class="badge">Gradients</span>
+                    </div>
+                </div>
             </div>
             
-            <div class="features">
-                <div class="feature">
-                    <i class="fas fa-bolt"></i>
-                    <h3>Мгновенные сообщения</h3>
-                    <p>Общайтесь в реальном времени с друзьями</p>
-                </div>
-                <div class="feature">
-                    <i class="fas fa-users"></i>
-                    <h3>Каналы</h3>
-                    <p>Создавайте тематические каналы для общения</p>
-                </div>
-                <div class="feature">
-                    <i class="fas fa-newspaper"></i>
-                    <h3>Лента постов</h3>
-                    <p>Публикуйте и комментируйте посты</p>
-                </div>
-                <div class="feature">
-                    <i class="fas fa-mobile-alt"></i>
-                    <h3>Для телефонов</h3>
-                    <p>Полностью адаптирован для мобильных устройств</p>
-                </div>
-            </div>
-            
-            <div class="auth-buttons">
-                <button class="btn btn-primary" onclick="showRegister()">
-                    <i class="fas fa-user-plus"></i> Начать бесплатно
+            <!-- Кнопки действий -->
+            <div class="action-buttons">
+                <button class="btn btn-primary btn-lg btn-glow" onclick="showRegister()">
+                    <i class="fas fa-rocket"></i>
+                    <span>Начать бесплатно</span>
                 </button>
-                <button class="btn btn-secondary" onclick="showLogin()">
-                    <i class="fas fa-sign-in-alt"></i> Войти
+                <button class="btn btn-outline btn-lg" onclick="showLogin()">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>Войти в аккаунт</span>
+                </button>
+                <button class="btn btn-ghost" onclick="toggleTheme()" title="Сменить тему">
+                    <i class="fas fa-moon"></i>
                 </button>
             </div>
             
-            <div class="reviews">
-                <h3>Что говорят пользователи</h3>
-                <div class="review">
-                    <p>"Лучший мессенджер для общения в реальном времени! Простой и удобный."</p>
-                    <span>- Алексей, Москва</span>
+            <!-- Дополнительная информация -->
+            <div class="welcome-footer">
+                <div class="stats">
+                    <div class="stat">
+                        <i class="fas fa-users"></i>
+                        <span id="liveUsers">0</span>
+                        <small>онлайн сейчас</small>
+                    </div>
+                    <div class="stat">
+                        <i class="fas fa-comment"></i>
+                        <span id="totalMessages">0</span>
+                        <small>сообщений</small>
+                    </div>
+                    <div class="stat">
+                        <i class="fas fa-bolt"></i>
+                        <span>99.9%</span>
+                        <small>аптайм</small>
+                    </div>
                 </div>
-                <div class="review">
-                    <p>"Отлично работает на телефоне. Каналы очень удобны для группового общения."</p>
-                    <span>- Мария, СПб</span>
+                
+                <div class="quick-demo">
+                    <h4>🎯 Быстрый старт:</h4>
+                    <div class="demo-commands">
+                        <code>@waveai привет!</code>
+                        <code>/ai объясни квантовую физику</code>
+                        <code>/img космический корабль</code>
+                        <code>/joke</code>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
     
-    <!-- Форма регистрации -->
+    <!-- ========== РЕГИСТРАЦИЯ ========== -->
     <div id="registerPage" class="page">
         <div class="auth-container">
             <button class="back-btn" onclick="showWelcome()">
                 <i class="fas fa-arrow-left"></i>
+                Назад
             </button>
             
-            <div class="logo">
-                <i class="fas fa-water"></i>
-                <h2>Регистрация</h2>
+            <div class="auth-header">
+                <div class="auth-logo">
+                    <i class="fas fa-water"></i>
+                </div>
+                <h2>Создать аккаунт</h2>
+                <p>Присоединяйтесь к сообществу WaveMessenger</p>
             </div>
             
-            <div class="form-group">
-                <label for="regUsername">Юзернейм</label>
-                <input type="text" id="regUsername" placeholder="например, alex2023" maxlength="20">
-                <div class="hint">Только латинские буквы и цифры</div>
+            <div class="auth-form">
+                <div class="form-group">
+                    <label for="regUsername">
+                        <i class="fas fa-user"></i> Юзернейм
+                    </label>
+                    <input type="text" id="regUsername" placeholder="yakadev" maxlength="20">
+                    <div class="form-hint">Только латинские буквы, цифры и _</div>
+                    
+                    <div class="username-options">
+                        <button type="button" class="suggestion-btn" onclick="fillUsername('yakadev')">
+                            <i class="fas fa-crown"></i> yakadev (админ)
+                        </button>
+                        <button type="button" class="suggestion-btn" onclick="generateUsername()">
+                            <i class="fas fa-random"></i> Сгенерировать
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="regDisplayName">
+                        <i class="fas fa-id-card"></i> Отображаемое имя
+                    </label>
+                    <input type="text" id="regDisplayName" placeholder="Ваше имя в чате">
+                </div>
+                
+                <div class="form-group">
+                    <label for="regAvatarColor">
+                        <i class="fas fa-palette"></i> Цвет аватара
+                    </label>
+                    <div class="color-picker">
+                        <div class="color-option" style="background: linear-gradient(135deg, #667eea, #764ba2)" onclick="selectAvatarColor('#667eea')"></div>
+                        <div class="color-option" style="background: linear-gradient(135deg, #f093fb, #f5576c)" onclick="selectAvatarColor('#f093fb')"></div>
+                        <div class="color-option" style="background: linear-gradient(135deg, #4facfe, #00f2fe)" onclick="selectAvatarColor('#4facfe')"></div>
+                        <div class="color-option" style="background: linear-gradient(135deg, #43e97b, #38f9d7)" onclick="selectAvatarColor('#43e97b')"></div>
+                        <div class="color-option" style="background: linear-gradient(135deg, #fa709a, #fee140)" onclick="selectAvatarColor('#fa709a')"></div>
+                        <button type="button" class="color-random" onclick="generateAvatarColor()">
+                            <i class="fas fa-random"></i>
+                        </button>
+                    </div>
+                    <input type="hidden" id="regAvatarColor" value="#667eea">
+                </div>
+                
+                <div class="form-group">
+                    <label for="regPassword">
+                        <i class="fas fa-lock"></i> Пароль
+                    </label>
+                    <input type="password" id="regPassword" placeholder="Минимум 6 символов">
+                    <div class="password-strength">
+                        <div class="strength-bar"></div>
+                        <span class="strength-text">Сложность: слабая</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="regTerms" checked>
+                        <span>Я принимаю <a href="#" onclick="showTerms()">условия использования</a></span>
+                    </label>
+                </div>
+                
+                <button class="btn btn-primary btn-block btn-lg" onclick="register()" id="registerBtn">
+                    <i class="fas fa-user-plus"></i>
+                    Создать аккаунт
+                </button>
             </div>
-            
-            <div class="form-group">
-                <label for="regDisplayName">Отображаемое имя</label>
-                <input type="text" id="regDisplayName" placeholder="Ваше имя для других">
-            </div>
-            
-            <div class="form-group">
-                <label for="regPassword">Пароль</label>
-                <input type="password" id="regPassword" placeholder="Минимум 6 символов">
-            </div>
-            
-            <button class="btn btn-primary btn-block" onclick="register()">
-                <i class="fas fa-user-plus"></i> Создать аккаунт
-            </button>
             
             <div class="auth-footer">
                 Уже есть аккаунт? <a href="#" onclick="showLogin()">Войти</a>
@@ -106,31 +227,62 @@
         </div>
     </div>
     
-    <!-- Форма входа -->
+    <!-- ========== ВХОД ========== -->
     <div id="loginPage" class="page">
         <div class="auth-container">
             <button class="back-btn" onclick="showWelcome()">
                 <i class="fas fa-arrow-left"></i>
+                Назад
             </button>
             
-            <div class="logo">
-                <i class="fas fa-water"></i>
-                <h2>Вход</h2>
+            <div class="auth-header">
+                <div class="auth-logo">
+                    <i class="fas fa-water"></i>
+                </div>
+                <h2>Вход в аккаунт</h2>
+                <p>С возвращением в WaveMessenger!</p>
             </div>
             
-            <div class="form-group">
-                <label for="loginUsername">Юзернейм</label>
-                <input type="text" id="loginUsername" placeholder="Ваш юзернейм">
+            <div class="auth-form">
+                <div class="form-group">
+                    <label for="loginUsername">
+                        <i class="fas fa-user"></i> Юзернейм
+                    </label>
+                    <input type="text" id="loginUsername" placeholder="yakadev или ваш юзернейм">
+                </div>
+                
+                <div class="form-group">
+                    <label for="loginPassword">
+                        <i class="fas fa-lock"></i> Пароль
+                    </label>
+                    <input type="password" id="loginPassword" placeholder="Ваш пароль">
+                </div>
+                
+                <div class="form-options">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="rememberMe">
+                        <span>Запомнить меня</span>
+                    </label>
+                    <a href="#" onclick="showPasswordReset()" class="forgot-password">
+                        Забыли пароль?
+                    </a>
+                </div>
+                
+                <button class="btn btn-primary btn-block btn-lg" onclick="login()" id="loginBtn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Войти в систему
+                </button>
+                
+                <div class="quick-login">
+                    <p>Быстрый вход для теста:</p>
+                    <button class="btn btn-sm btn-outline" onclick="quickLogin('yakadev', 'admin123')">
+                        <i class="fas fa-crown"></i> yakadev (админ)
+                    </button>
+                    <button class="btn btn-sm btn-outline" onclick="quickLogin('demo', 'demo123')">
+                        <i class="fas fa-user"></i> demo
+                    </button>
+                </div>
             </div>
-            
-            <div class="form-group">
-                <label for="loginPassword">Пароль</label>
-                <input type="password" id="loginPassword" placeholder="Ваш пароль">
-            </div>
-            
-            <button class="btn btn-primary btn-block" onclick="login()">
-                <i class="fas fa-sign-in-alt"></i> Войти
-            </button>
             
             <div class="auth-footer">
                 Нет аккаунта? <a href="#" onclick="showRegister()">Зарегистрироваться</a>
@@ -138,198 +290,961 @@
         </div>
     </div>
     
-    <!-- Основное приложение -->
+    <!-- ========== ОСНОВНОЕ ПРИЛОЖЕНИЕ ========== -->
     <div id="appPage" class="page">
         <!-- Верхняя панель -->
         <div class="top-bar">
-            <button class="menu-toggle" onclick="toggleSidebar()">
-                <i class="fas fa-bars"></i>
-            </button>
-            
-            <div class="logo-small">
-                <i class="fas fa-water"></i>
-                <span>Wave</span>
+            <div class="top-left">
+                <button class="menu-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <div class="app-logo">
+                    <div class="logo-mini">
+                        <i class="fas fa-water"></i>
+                    </div>
+                    <div class="logo-text">
+                        <span class="logo-part">Wave</span>
+                        <span class="online-dot"></span>
+                    </div>
+                </div>
+                
+                <div class="connection-status" id="connectionStatus">
+                    <i class="fas fa-wifi"></i>
+                    <span>Подключение...</span>
+                </div>
             </div>
             
-            <div class="user-info" onclick="toggleProfileMenu()">
-                <div class="avatar" id="userAvatar">U</div>
-                <span id="userName"></span>
+            <div class="top-center">
+                <div class="current-channel" id="currentChannel">
+                    <i class="fas fa-hashtag"></i>
+                    <span>general</span>
+                </div>
+                
+                <div class="online-counter" id="onlineCounter">
+                    <i class="fas fa-user"></i>
+                    <span>0</span>
+                </div>
+            </div>
+            
+            <div class="top-right">
+                <!-- Поиск -->
+                <div class="search-wrapper">
+                    <input type="text" class="search-input" placeholder="Поиск сообщений..." id="globalSearch">
+                    <button class="search-btn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                
+                <!-- Уведомления -->
+                <div class="notifications-bell" onclick="toggleNotifications()">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-count" id="notificationCount">0</span>
+                </div>
+                
+                <!-- Пользователь -->
+                <div class="user-menu" onclick="toggleUserMenu()">
+                    <div class="user-avatar" id="userAvatar">
+                        <div class="avatar-badge" id="userBadge"></div>
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name" id="userName">Гость</span>
+                        <span class="user-status" id="userStatus">offline</span>
+                    </div>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
             </div>
         </div>
         
-        <!-- Боковое меню -->
+        <!-- Боковая панель -->
         <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h3>Навигация</h3>
+                <button class="sidebar-close" onclick="toggleSidebar()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
             <div class="nav-menu">
                 <a href="#" class="nav-item active" onclick="showSection('feed')">
-                    <i class="fas fa-home"></i>
-                    <span>Лента</span>
+                    <div class="nav-icon">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <span class="nav-text">Лента</span>
                 </a>
+                
                 <a href="#" class="nav-item" onclick="showSection('chat')">
-                    <i class="fas fa-comments"></i>
-                    <span>Сообщения</span>
+                    <div class="nav-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <span class="nav-text">Сообщения</span>
+                    <span class="nav-badge" id="unreadCount">0</span>
                 </a>
+                
                 <a href="#" class="nav-item" onclick="showSection('channels')">
-                    <i class="fas fa-hashtag"></i>
-                    <span>Каналы</span>
+                    <div class="nav-icon">
+                        <i class="fas fa-hashtag"></i>
+                    </div>
+                    <span class="nav-text">Каналы</span>
+                    <span class="nav-badge" id="channelsCount">3</span>
                 </a>
-                <a href="#" class="nav-item" onclick="showSection('search')">
-                    <i class="fas fa-search"></i>
-                    <span>Поиск</span>
+                
+                <a href="#" class="nav-item" onclick="showSection('ai')">
+                    <div class="nav-icon ai-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <span class="nav-text">WaveAI</span>
+                    <span class="nav-badge badge-ai">AI</span>
                 </a>
+                
                 <a href="#" class="nav-item" onclick="showSection('online')">
-                    <i class="fas fa-users"></i>
-                    <span>Онлайн <span id="onlineCount">0</span></span>
+                    <div class="nav-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <span class="nav-text">Онлайн</span>
+                    <span class="nav-badge" id="onlineSidebarCount">0</span>
                 </a>
+                
+                <!-- Админ пункт (только для админов) -->
+                <a href="#" class="nav-item admin-only" onclick="showSection('admin')" id="adminNavItem" style="display: none;">
+                    <div class="nav-icon admin-icon">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    <span class="nav-text">Админ-панель</span>
+                    <span class="nav-badge badge-admin">👑</span>
+                </a>
+                
                 <a href="#" class="nav-item" onclick="showSection('profile')">
-                    <i class="fas fa-user"></i>
-                    <span>Профиль</span>
+                    <div class="nav-icon">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <span class="nav-text">Профиль</span>
                 </a>
-                <a href="#" class="nav-item" onclick="logout()">
+                
+                <a href="#" class="nav-item" onclick="openSettings()">
+                    <div class="nav-icon">
+                        <i class="fas fa-cog"></i>
+                    </div>
+                    <span class="nav-text">Настройки</span>
+                </a>
+            </div>
+            
+            <!-- Создание поста (мини) -->
+            <div class="quick-post">
+                <textarea placeholder="Что нового?" rows="2" id="quickPostInput"></textarea>
+                <button class="btn btn-sm btn-primary" onclick="createQuickPost()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+            
+            <!-- Каналы (список) -->
+            <div class="channels-list">
+                <div class="channels-header">
+                    <h4>Каналы</h4>
+                    <button class="btn btn-icon" onclick="showNewChannelModal()">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                <div id="channelsSidebarList">
+                    <!-- Каналы загружаются динамически -->
+                </div>
+            </div>
+            
+            <!-- Футер сайдбара -->
+            <div class="sidebar-footer">
+                <button class="btn btn-ghost btn-block" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Выйти
+                </button>
+            </div>
+        </div>
+        
+        <!-- Основной контент -->
+        <div class="main-content">
+            <!-- Лента постов -->
+            <div class="section active" id="feedSection">
+                <div class="section-header">
+                    <h2><i class="fas fa-newspaper"></i> Лента постов</h2>
+                    <button class="btn btn-primary" onclick="openPostCreator()">
+                        <i class="fas fa-plus"></i> Новый пост
+                    </button>
+                </div>
+                
+                <div class="post-creator" id="postCreator">
+                    <div class="post-creator-header">
+                        <div class="creator-avatar" id="creatorAvatar"></div>
+                        <div class="creator-info">
+                            <span id="creatorName"></span>
+                            <div class="privacy-selector">
+                                <select id="postPrivacy">
+                                    <option value="public">🌍 Публичный</option>
+                                    <option value="friends">👥 Только друзья</option>
+                                    <option value="private">🔒 Приватный</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <textarea id="postContent" placeholder="Что у вас нового? Можно использовать Markdown..." rows="4"></textarea>
+                    
+                    <div class="post-creator-actions">
+                        <div class="attachment-buttons">
+                            <button class="btn btn-icon" onclick="attachImage()" title="Изображение">
+                                <i class="fas fa-image"></i>
+                            </button>
+                            <button class="btn btn-icon" onclick="attachFile()" title="Файл">
+                                <i class="fas fa-paperclip"></i>
+                            </button>
+                            <button class="btn btn-icon" onclick="insertEmojiToPost()" title="Эмодзи">
+                                <i class="fas fa-smile"></i>
+                            </button>
+                            <button class="btn btn-icon" onclick="formatText('bold')" title="Жирный">
+                                <i class="fas fa-bold"></i>
+                            </button>
+                            <button class="btn btn-icon" onclick="formatText('italic')" title="Курсив">
+                                <i class="fas fa-italic"></i>
+                            </button>
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="createPost()" id="postSubmitBtn">
+                            <i class="fas fa-paper-plane"></i> Опубликовать
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="posts-container" id="postsContainer">
+                    <div class="loading-posts">
+                        <div class="spinner"></div>
+                        <p>Загрузка постов...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Чат -->
+            <div class="section" id="chatSection">
+                <div class="chat-container">
+                    <!-- Заголовок чата -->
+                    <div class="chat-header">
+                        <div class="chat-info">
+                            <div class="chat-icon">
+                                <i class="fas fa-hashtag"></i>
+                            </div>
+                            <div>
+                                <h3 id="chatTitle">general</h3>
+                                <p id="chatDescription">Основной чат</p>
+                            </div>
+                        </div>
+                        
+                        <div class="chat-actions">
+                            <button class="btn btn-icon" onclick="showChatInfo()" title="Информация о чате">
+                                <i class="fas fa-info-circle"></i>
+                            </button>
+                            <button class="btn btn-icon" onclick="showChatMembers()" title="Участники">
+                                <i class="fas fa-users"></i>
+                            </button>
+                            <button class="btn btn-icon" onclick="clearChat()" title="Очистить чат">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Сообщения -->
+                    <div class="messages-container" id="messagesContainer">
+                        <div class="welcome-message">
+                            <div class="welcome-icon">
+                                <i class="fas fa-water"></i>
+                            </div>
+                            <h3>Добро пожаловать в общий чат!</h3>
+                            <p>Напишите сообщение или используйте команды:</p>
+                            <div class="welcome-commands">
+                                <code>@waveai привет!</code>
+                                <code>/ai [вопрос]</code>
+                                <code>/img [описание]</code>
+                                <code>/help</code>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Индикатор набора -->
+                    <div class="typing-indicator" id="typingIndicator">
+                        <div class="typing-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                        <span id="typingText"></span>
+                    </div>
+                    
+                    <!-- Поле ввода -->
+                    <div class="message-input-container">
+                        <div class="input-actions">
+                            <button class="btn btn-icon" onclick="toggleEmojiPicker()" title="Эмодзи">
+                                <i class="fas fa-smile"></i>
+                            </button>
+                            <button class="btn btn-icon" onclick="attachFileToChat()" title="Прикрепить файл">
+                                <i class="fas fa-paperclip"></i>
+                            </button>
+                            <button class="btn btn-icon" onclick="recordVoiceMessage()" title="Голосовое сообщение">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="message-input-wrapper">
+                            <textarea 
+                                id="messageInput" 
+                                placeholder="Написать сообщение... (Shift+Enter для новой строки)"
+                                rows="1"
+                                oninput="autoResizeTextarea(this)"
+                                onkeydown="handleMessageKeydown(event)"
+                            ></textarea>
+                            
+                            <!-- Эмодзи панель -->
+                            <div class="emoji-picker" id="emojiPicker">
+                                <div class="emoji-categories">
+                                    <button class="emoji-category active" onclick="showEmojiCategory('recent')">🕐</button>
+                                    <button class="emoji-category" onclick="showEmojiCategory('smileys')">😊</button>
+                                    <button class="emoji-category" onclick="showEmojiCategory('objects')">💡</button>
+                                    <button class="emoji-category" onclick="showEmojiCategory('nature')">🌿</button>
+                                    <button class="emoji-category" onclick="showEmojiCategory('food')">🍕</button>
+                                </div>
+                                <div class="emoji-grid" id="emojiGrid">
+                                    <!-- Эмодзи загружаются динамически -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-primary btn-send" onclick="sendMessage()" id="sendMessageBtn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Подсказки WaveAI -->
+                    <div class="ai-suggestions" id="aiSuggestions">
+                        <div class="suggestions-header">
+                            <i class="fas fa-robot"></i>
+                            <span>WaveAI предлагает:</span>
+                        </div>
+                        <div class="suggestions-grid">
+                            <button class="suggestion-btn" onclick="insertAiSuggestion('/help')">
+                                <span>/help</span>
+                                <small>Все команды</small>
+                            </button>
+                            <button class="suggestion-btn" onclick="insertAiSuggestion('/img космический корабль')">
+                                <span>/img</span>
+                                <small>Генерация</small>
+                            </button>
+                            <button class="suggestion-btn" onclick="insertAiSuggestion('/joke')">
+                                <span>/joke</span>
+                                <small>Шутка</small>
+                            </button>
+                            <button class="suggestion-btn" onclick="insertAiSuggestion('@waveai расскажи о себе')">
+                                <span>@waveai</span>
+                                <small>Вопрос</small>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- WaveAI -->
+            <div class="section" id="aiSection">
+                <div class="ai-container">
+                    <div class="ai-header">
+                        <div class="ai-avatar">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="ai-info">
+                            <h2>🤖 Wave AI Assistant</h2>
+                            <p>Искусственный интеллект на базе Google Gemini</p>
+                            <div class="ai-stats">
+                                <span class="stat">
+                                    <i class="fas fa-brain"></i>
+                                    <strong>Gemini Pro</strong>
+                                </span>
+                                <span class="stat">
+                                    <i class="fas fa-bolt"></i>
+                                    <strong id="aiRequestsCount">0</strong> запросов сегодня
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Чат с AI -->
+                    <div class="ai-chat-container">
+                        <div class="ai-chat-messages" id="aiChatMessages">
+                            <div class="ai-message ai-message-bot">
+                                <div class="ai-message-avatar">
+                                    <i class="fas fa-robot"></i>
+                                </div>
+                                <div class="ai-message-content">
+                                    <div class="ai-message-text">
+                                        Привет! Я WaveAI, ваш AI-ассистент в WaveMessenger! 🤖
+                                        <br><br>
+                                        Я могу:
+                                        • Отвечать на вопросы (/ai вопрос)
+                                        • Генерировать изображения (/img описание)
+                                        • Рассказывать шутки (/joke)
+                                        • Давать советы (/advice тема)
+                                        • И многое другое!
+                                        <br><br>
+                                        Используйте <code>/help</code> чтобы увидеть все команды!
+                                    </div>
+                                    <div class="ai-message-time">Только что</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="ai-chat-input">
+                            <div class="ai-commands">
+                                <div class="commands-scroll">
+                                    <button class="ai-command" onclick="insertAiCommand('/ai ')">
+                                        <i class="fas fa-comment"></i>
+                                        <span>Задать вопрос</span>
+                                    </button>
+                                    <button class="ai-command" onclick="insertAiCommand('/img ')">
+                                        <i class="fas fa-image"></i>
+                                        <span>Генерация</span>
+                                    </button>
+                                    <button class="ai-command" onclick="insertAiCommand('/story ')">
+                                        <i class="fas fa-book"></i>
+                                        <span>История</span>
+                                    </button>
+                                    <button class="ai-command" onclick="insertAiCommand('/advice ')">
+                                        <i class="fas fa-lightbulb"></i>
+                                        <span>Совет</span>
+                                    </button>
+                                    <button class="ai-command" onclick="insertAiCommand('/trivia')">
+                                        <i class="fas fa-star"></i>
+                                        <span>Факт</span>
+                                    </button>
+                                    <button class="ai-command" onclick="insertAiCommand('/clear')">
+                                        <i class="fas fa-broom"></i>
+                                        <span>Очистить</span>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="ai-input-wrapper">
+                                <textarea 
+                                    id="aiInput" 
+                                    placeholder="Введите ваш запрос для WaveAI..."
+                                    rows="2"
+                                ></textarea>
+                                
+                                <div class="ai-input-actions">
+                                    <button class="btn btn-icon" onclick="speakAiResponse()" title="Озвучить ответ">
+                                        <i class="fas fa-volume-up"></i>
+                                    </button>
+                                    <button class="btn btn-primary" onclick="sendAiMessage()">
+                                        <i class="fas fa-paper-plane"></i>
+                                        Отправить
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Примеры -->
+                    <div class="ai-examples">
+                        <h4>Примеры запросов:</h4>
+                        <div class="examples-grid">
+                            <button class="example-btn" onclick="loadAiExample('explain')">
+                                Объясни квантовую физику простыми словами
+                            </button>
+                            <button class="example-btn" onclick="loadAiExample('story')">
+                                Напиши короткую историю про космического кота
+                            </button>
+                            <button class="example-btn" onclick="loadAiExample('code')">
+                                Напиши код красивой анимации на CSS
+                            </button>
+                            <button class="example-btn" onclick="loadAiExample('advice')">
+                                Дай совет как улучшить продуктивность
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Настройки AI -->
+                    <div class="ai-settings">
+                        <h4><i class="fas fa-cog"></i> Настройки WaveAI</h4>
+                        <div class="settings-grid">
+                            <label class="checkbox-setting">
+                                <input type="checkbox" id="aiSounds" checked>
+                                <span>Звуки уведомлений</span>
+                            </label>
+                            <label class="checkbox-setting">
+                                <input type="checkbox" id="aiAutoResponse" checked>
+                                <span>Авто-ответы на @waveai</span>
+                            </label>
+                            <label class="checkbox-setting">
+                                <input type="checkbox" id="aiSuggestions" checked>
+                                <span>Показывать подсказки</span>
+                            </label>
+                            <label class="checkbox-setting">
+                                <input type="checkbox" id="aiMarkdown">
+                                <span>Форматирование Markdown</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Админ-панель -->
+            <div class="section" id="adminSection">
+                <div class="admin-container">
+                    <div class="admin-header">
+                        <div class="admin-crown">
+                            <i class="fas fa-crown"></i>
+                        </div>
+                        <div>
+                            <h2>👑 Административная панель</h2>
+                            <p>Управление системой WaveMessenger</p>
+                            <div class="admin-warning">
+                                <i class="fas fa-shield-alt"></i>
+                                Доступно только пользователю <strong>yakadev</strong>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Статистика -->
+                    <div class="admin-stats" id="adminStats">
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="stat-data">
+                                    <span class="stat-value" id="statUsers">0</span>
+                                    <span class="stat-label">Пользователей</span>
+                                </div>
+                            </div>
+                            
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-comment"></i>
+                                </div>
+                                <div class="stat-data">
+                                    <span class="stat-value" id="statMessages">0</span>
+                                    <span class="stat-label">Сообщений</span>
+                                </div>
+                            </div>
+                            
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-wifi"></i>
+                                </div>
+                                <div class="stat-data">
+                                    <span class="stat-value" id="statOnline">0</span>
+                                    <span class="stat-label">Онлайн</span>
+                                </div>
+                            </div>
+                            
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-robot"></i>
+                                </div>
+                                <div class="stat-data">
+                                    <span class="stat-value" id="statAIRequests">0</span>
+                                    <span class="stat-label">AI запросов</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="refreshAdminStats()">
+                            <i class="fas fa-sync-alt"></i> Обновить статистику
+                        </button>
+                    </div>
+                    
+                    <!-- Действия -->
+                    <div class="admin-actions">
+                        <h3>Действия администратора</h3>
+                        <div class="actions-grid">
+                            <button class="admin-action-btn" onclick="adminSendAnnouncement()">
+                                <i class="fas fa-bullhorn"></i>
+                                <span>Отправить анонс</span>
+                            </button>
+                            
+                            <button class="admin-action-btn" onclick="adminViewUsers()">
+                                <i class="fas fa-user-cog"></i>
+                                <span>Управление пользователями</span>
+                            </button>
+                            
+                            <button class="admin-action-btn" onclick="adminViewLogs()">
+                                <i class="fas fa-clipboard-list"></i>
+                                <span>Просмотр логов</span>
+                            </button>
+                            
+                            <button class="admin-action-btn" onclick="adminSystemInfo()">
+                                <i class="fas fa-server"></i>
+                                <span>Информация о системе</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Быстрые команды -->
+                    <div class="admin-quick-commands">
+                        <h3>Быстрые команды</h3>
+                        <div class="commands-list">
+                            <div class="command-item">
+                                <code>/announce [текст]</code>
+                                <span>Отправить анонс всем пользователям</span>
+                            </div>
+                            <div class="command-item">
+                                <code>/kick [username] [причина]</code>
+                                <span>Отключить пользователя</span>
+                            </div>
+                            <div class="command-item">
+                                <code>/stats</code>
+                                <span>Получить статистику сервера</span>
+                            </div>
+                            <div class="command-item">
+                                <code>/broadcast [текст]</code>
+                                <span>Отправить сообщение всем</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Другие секции (online, profile, channels) будут загружены динамически -->
+        </div>
+        
+        <!-- Нижняя навигация (для мобильных) -->
+        <div class="bottom-nav">
+            <button class="nav-btn active" onclick="showSection('feed')">
+                <i class="fas fa-home"></i>
+                <span>Лента</span>
+            </button>
+            
+            <button class="nav-btn" onclick="showSection('chat')">
+                <i class="fas fa-comments"></i>
+                <span>Чат</span>
+                <span class="nav-badge-mobile" id="mobileUnread">0</span>
+            </button>
+            
+            <button class="nav-btn" onclick="showSection('ai')">
+                <i class="fas fa-robot"></i>
+                <span>AI</span>
+            </button>
+            
+            <button class="nav-btn" onclick="showSection('profile')">
+                <i class="fas fa-user"></i>
+                <span>Профиль</span>
+            </button>
+            
+            <button class="nav-btn" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+                <span>Ещё</span>
+            </button>
+        </div>
+        
+        <!-- Меню пользователя -->
+        <div class="user-menu-dropdown" id="userMenuDropdown">
+            <div class="dropdown-header">
+                <div class="dropdown-avatar" id="dropdownAvatar"></div>
+                <div class="dropdown-user-info">
+                    <h4 id="dropdownName"></h4>
+                    <p id="dropdownUsername"></p>
+                </div>
+            </div>
+            
+            <div class="dropdown-items">
+                <a href="#" class="dropdown-item" onclick="showSection('profile')">
+                    <i class="fas fa-user"></i>
+                    <span>Мой профиль</span>
+                </a>
+                
+                <a href="#" class="dropdown-item" onclick="openSettings()">
+                    <i class="fas fa-cog"></i>
+                    <span>Настройки</span>
+                </a>
+                
+                <a href="#" class="dropdown-item" onclick="openThemeSelector()">
+                    <i class="fas fa-palette"></i>
+                    <span>Тема оформления</span>
+                </a>
+                
+                <div class="dropdown-divider"></div>
+                
+                <a href="#" class="dropdown-item" onclick="logout()">
                     <i class="fas fa-sign-out-alt"></i>
                     <span>Выйти</span>
                 </a>
             </div>
         </div>
         
-        <!-- Основной контент -->
-        <div class="main-content">
-            <!-- Лента -->
-            <div class="section active" id="feedSection">
-                <div class="post-creator">
-                    <textarea id="postInput" placeholder="Что нового?" rows="3"></textarea>
-                    <button class="btn btn-primary" onclick="createPost()">
-                        <i class="fas fa-paper-plane"></i> Опубликовать
-                    </button>
-                </div>
-                
-                <div id="postsContainer">
-                    <div class="loading">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        <p>Загрузка постов...</p>
-                    </div>
-                </div>
+        <!-- Панель уведомлений -->
+        <div class="notifications-panel" id="notificationsPanel">
+            <div class="notifications-header">
+                <h3><i class="fas fa-bell"></i> Уведомления</h3>
+                <button class="btn btn-icon" onclick="toggleNotifications()">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            
-            <!-- Сообщения -->
-            <div class="section" id="chatSection">
-                <div class="chat-header">
-                    <h3>Общий чат</h3>
-                    <span id="chatOnline">0 онлайн</span>
-                </div>
-                
-                <div id="messagesContainer">
-                    <div class="empty-state">
-                        <i class="fas fa-comments"></i>
-                        <p>Начните общение!</p>
-                    </div>
-                </div>
-                
-                <div class="message-input">
-                    <input type="text" id="messageInput" placeholder="Введите сообщение...">
-                    <button class="btn btn-primary" onclick="sendMessage()">
-                        <i class="fas fa-paper-plane"></i>
-                    </button>
-                </div>
+            <div class="notifications-list" id="notificationsList">
+                <!-- Уведомления загружаются динамически -->
             </div>
-            
-            <!-- Каналы -->
-            <div class="section" id="channelsSection">
-                <div class="section-header">
-                    <h3>Каналы</h3>
-                    <button class="btn btn-secondary" onclick="showNewChannelModal()">
-                        <i class="fas fa-plus"></i> Новый
-                    </button>
-                </div>
-                
-                <div id="channelsContainer">
-                    <div class="channel">
-                        <div class="channel-info">
-                            <i class="fas fa-hashtag"></i>
-                            <div>
-                                <h4>general</h4>
-                                <p>Основной канал для общения</p>
-                            </div>
-                        </div>
-                        <button class="btn btn-primary" onclick="joinChannel('general')">
-                            Присоединиться
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Поиск -->
-            <div class="section" id="searchSection">
-                <div class="search-box">
-                    <input type="text" placeholder="Поиск пользователей..." id="userSearch">
-                    <button class="btn btn-primary" onclick="searchUsers()">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </div>
-                
-                <div id="searchResults">
-                    <!-- Результаты поиска -->
-                </div>
-            </div>
-            
-            <!-- Онлайн -->
-            <div class="section" id="onlineSection">
-                <h3>Сейчас онлайн</h3>
-                <div id="onlineUsersList">
-                    <!-- Список онлайн пользователей -->
-                </div>
-            </div>
-            
-            <!-- Профиль -->
-            <div class="section" id="profileSection">
-                <div id="profileContent">
-                    <!-- Профиль пользователя -->
-                </div>
-            </div>
-        </div>
-        
-        <!-- Мобильное меню -->
-        <div class="bottom-nav">
-            <button class="nav-btn active" onclick="showSection('feed')">
-                <i class="fas fa-home"></i>
-                <span>Лента</span>
-            </button>
-            <button class="nav-btn" onclick="showSection('chat')">
-                <i class="fas fa-comments"></i>
-                <span>Чат</span>
-            </button>
-            <button class="nav-btn" onclick="showSection('channels')">
-                <i class="fas fa-hashtag"></i>
-                <span>Каналы</span>
-            </button>
-            <button class="nav-btn" onclick="showSection('profile')">
-                <i class="fas fa-user"></i>
-                <span>Профиль</span>
-            </button>
         </div>
     </div>
     
-    <!-- Модальное окно нового канала -->
+    <!-- ========== МОДАЛЬНЫЕ ОКНА ========== -->
+    <!-- Новый канал -->
     <div class="modal" id="newChannelModal">
         <div class="modal-content">
-            <h3>Создать канал</h3>
+            <h3><i class="fas fa-plus-circle"></i> Создать новый канал</h3>
+            
             <div class="form-group">
-                <input type="text" id="channelName" placeholder="Название канала">
+                <label>Название канала</label>
+                <input type="text" id="channelName" placeholder="например, music-chat">
+                <div class="form-hint">Только латинские буквы, цифры и дефисы</div>
             </div>
+            
             <div class="form-group">
-                <textarea id="channelDesc" placeholder="Описание" rows="3"></textarea>
+                <label>Описание</label>
+                <textarea id="channelDescription" placeholder="О чём этот канал?" rows="3"></textarea>
             </div>
-            <div class="modal-buttons">
-                <button class="btn btn-primary" onclick="createChannel()">Создать</button>
-                <button class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+            
+            <div class="form-group">
+                <label>Тип канала</label>
+                <div class="channel-type-selector">
+                    <label class="channel-type-option active" onclick="selectChannelType('public')">
+                        <i class="fas fa-globe"></i>
+                        <span>Публичный</span>
+                        <small>Виден всем</small>
+                    </label>
+                    
+                    <label class="channel-type-option" onclick="selectChannelType('private')">
+                        <i class="fas fa-lock"></i>
+                        <span>Приватный</span>
+                        <small>Только по приглашению</small>
+                    </label>
+                    
+                    <label class="channel-type-option" onclick="selectChannelType('admin')">
+                        <i class="fas fa-crown"></i>
+                        <span>Админ</span>
+                        <small>Только для администраторов</small>
+                    </label>
+                </div>
+                <input type="hidden" id="channelType" value="public">
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="createChannel()">
+                    <i class="fas fa-check"></i> Создать канал
+                </button>
+                <button class="btn btn-secondary" onclick="closeModal('newChannelModal')">
+                    Отмена
+                </button>
             </div>
         </div>
     </div>
     
-    <!-- Уведомления -->
-    <div id="notification" class="notification">
-        <div id="notificationText"></div>
+    <!-- Настройки -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content wide-modal">
+            <h3><i class="fas fa-cog"></i> Настройки</h3>
+            
+            <div class="settings-tabs">
+                <div class="tab-nav">
+                    <button class="tab-btn active" onclick="openSettingsTab('general')">Основные</button>
+                    <button class="tab-btn" onclick="openSettingsTab('appearance')">Внешний вид</button>
+                    <button class="tab-btn" onclick="openSettingsTab('notifications')">Уведомления</button>
+                    <button class="tab-btn" onclick="openSettingsTab('privacy')">Приватность</button>
+                    <button class="tab-btn" onclick="openSettingsTab('ai')">WaveAI</button>
+                </div>
+                
+                <div class="tab-content active" id="settingsGeneral">
+                    <div class="settings-group">
+                        <h4>Аккаунт</h4>
+                        <div class="settings-item">
+                            <label>Имя пользователя</label>
+                            <input type="text" value="yakadev" disabled>
+                            <small>Изменить нельзя</small>
+                        </div>
+                        <div class="settings-item">
+                            <label>Отображаемое имя</label>
+                            <input type="text" id="settingDisplayName" placeholder="Ваше имя">
+                        </div>
+                        <div class="settings-item">
+                            <label>Статус</label>
+                            <select id="settingStatus">
+                                <option value="online">🟢 Онлайн</option>
+                                <option value="away">🟡 Отошёл</option>
+                                <option value="busy">🔴 Не беспокоить</option>
+                                <option value="invisible">⚫ Невидимый</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="settingsAppearance">
+                    <div class="settings-group">
+                        <h4>Тема оформления</h4>
+                        <div class="theme-selector">
+                            <div class="theme-option active" onclick="selectTheme('dark')">
+                                <div class="theme-preview dark-theme"></div>
+                                <span>Тёмная</span>
+                            </div>
+                            <div class="theme-option" onclick="selectTheme('light')">
+                                <div class="theme-preview light-theme"></div>
+                                <span>Светлая</span>
+                            </div>
+                            <div class="theme-option" onclick="selectTheme('auto')">
+                                <div class="theme-preview auto-theme"></div>
+                                <span>Авто</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-group">
+                        <h4>Цветовая схема</h4>
+                        <div class="color-schemes">
+                            <div class="color-scheme active" style="--primary: #6366f1" onclick="selectColorScheme('#6366f1')"></div>
+                            <div class="color-scheme" style="--primary: #8b5cf6" onclick="selectColorScheme('#8b5cf6')"></div>
+                            <div class="color-scheme" style="--primary: #ec4899" onclick="selectColorScheme('#ec4899')"></div>
+                            <div class="color-scheme" style="--primary: #10b981" onclick="selectColorScheme('#10b981')"></div>
+                            <div class="color-scheme" style="--primary: #f59e0b" onclick="selectColorScheme('#f59e0b')"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Другие табы будут загружены динамически -->
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="saveSettings()">
+                    <i class="fas fa-save"></i> Сохранить настройки
+                </button>
+                <button class="btn btn-secondary" onclick="closeModal('settingsModal')">
+                    Закрыть
+                </button>
+            </div>
+        </div>
     </div>
     
+    <!-- Загрузка файлов -->
+    <div class="modal" id="uploadModal">
+        <div class="modal-content">
+            <h3><i class="fas fa-cloud-upload-alt"></i> Загрузка файла</h3>
+            
+            <div class="upload-dropzone" id="uploadDropzone">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p>Перетащите файлы сюда или</p>
+                <button class="btn btn-outline" onclick="document.getElementById('fileInput').click()">
+                    Выберите файл
+                </button>
+                <input type="file" id="fileInput" style="display: none">
+            </div>
+            
+            <div class="upload-progress" id="uploadProgress" style="display: none">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <span id="progressText">0%</span>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="uploadFile()" id="uploadBtn">
+                    Загрузить
+                </button>
+                <button class="btn btn-secondary" onclick="closeModal('uploadModal')">
+                    Отмена
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Об авторе -->
+    <div class="modal" id="aboutModal">
+        <div class="modal-content">
+            <h3><i class="fas fa-info-circle"></i> О WaveMessenger</h3>
+            
+            <div class="about-content">
+                <div class="about-logo">
+                    <i class="fas fa-water"></i>
+                </div>
+                
+                <h4>WaveMessenger Pro 3.0</h4>
+                <p>Современный мессенджер с искусственным интеллектом</p>
+                
+                <div class="about-features">
+                    <div class="about-feature">
+                        <i class="fas fa-robot"></i>
+                        <span>WaveAI на базе Google Gemini</span>
+                    </div>
+                    <div class="about-feature">
+                        <i class="fas fa-bolt"></i>
+                        <span>Realtime WebSocket соединение</span>
+                    </div>
+                    <div class="about-feature">
+                        <i class="fas fa-palette"></i>
+                        <span>Кастомные темы и анимации</span>
+                    </div>
+                    <div class="about-feature">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Админ-панель и модерация</span>
+                    </div>
+                </div>
+                
+                <div class="about-credits">
+                    <h5>Разработчики:</h5>
+                    <p><strong>yakadev</strong> - Backend & AI Integration</p>
+                    <p><strong>Darkwater</strong> - Frontend & Design</p>
+                    
+                    <div class="about-links">
+                        <a href="#" onclick="showChangelog()">
+                            <i class="fas fa-history"></i> История изменений
+                        </a>
+                        <a href="#" onclick="showTerms()">
+                            <i class="fas fa-file-contract"></i> Условия использования
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="closeModal('aboutModal')">
+                    Закрыть
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ========== ПОДКЛЮЧЕНИЕ СКРИПТОВ ========== -->
+    <script src="/socket.io/socket.io.js"></script>
     <script src="script.js"></script>
+    
+    <!-- Инициализация -->
+    <script>
+        // Запуск при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🌊 WaveMessenger Pro загружается...');
+            
+            // Инициализация темы
+            initTheme();
+            
+            // Создание частиц
+            createParticles();
+            
+            // Проверка сохранённого пользователя
+            checkSavedUser();
+            
+            // Обновление статистики на главной
+            updateWelcomeStats();
+            
+            // Загрузка эмодзи
+            loadEmojis();
+        });
+        
+        // Анимации при скролле
+        window.addEventListener('scroll', function() {
+            const elements = document.querySelectorAll('[data-aos]');
+            elements.forEach(el => {
+                const position = el.getBoundingClientRect();
+                if (position.top < window.innerHeight * 0.8) {
+                    el.classList.add('aos-animate');
+                }
+            });
+        });
+    </script>
 </body>
 </html>

@@ -1,705 +1,831 @@
-// Глобальные переменные
+// ========== КОНФИГУРАЦИЯ ==========
+const CONFIG = {
+    appName: "WaveMessenger Pro",
+    version: "3.0",
+    serverUrl: window.location.origin,
+    reconnectAttempts: 5,
+    reconnectDelay: 3000,
+    features: {
+        aiEnabled: true,
+        notifications: true,
+        sounds: true,
+        animations: true
+    }
+};
+
+// ========== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ==========
 let socket = null;
 let currentUser = null;
-let users = [];
-let messages = [];
-let posts = [];
-let channels = [];
+let currentChannel = 'general';
+let messageQueue = [];
+let isTyping = false;
+let typingTimeout = null;
+let reconnectCount = 0;
+let notifications = [];
 let onlineUsers = [];
+let channels = [];
+let aiContext = [];
 
-// Цвета для аватаров
-const avatarColors = [
-    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-    'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-    'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-    'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
-];
+// Эмодзи
+const emojiCategories = {
+    smileys: ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐', '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑', '🤠'],
+    objects: ['⌚', '📱', '📲', '💻', '⌨️', '🖥️', '🖨️', '🖱️', '🖲️', '🕹️', '🗜️', '💽', '💾', '💿', '📀', '📼', '📷', '📸', '📹', '🎥', '📽️', '🎞️', '📞', '☎️', '📟', '📠', '📺', '📻', '🎙️', '🎚️', '🎛️', '🧭', '⏱️', '⏲️', '⏰', '🕰️', '⌛', '⏳', '📡', '🔋', '🔌', '💡', '🔦', '🕯️', '🪔', '🧯', '🛢️', '💸', '💵', '💴', '💶', '💷', '💰', '💳', '💎', '⚖️', '🧰', '🔧', '🔨', '⚒️', '🛠️', '⛏️', '🔩', '⚙️', '🧱', '⛓️', '🧲', '🔫', '💣', '🧨', '🪓', '🔪', '🗡️', '⚔️', '🛡️', '🚬', '⚰️', '🪦', '⚱️', '🏺', '🔮', '📿', '🧿', '💈', '⚗️', '🔭', '🔬', '🕳️', '🩹', '🩺', '💊', '💉', '🩸', '🧬', '🦠', '🧫', '🧪', '🌡️', '🧹', '🧺', '🧻', '🚽', '🚰', '🚿', '🛁', '🛀', '🧼', '🪒', '🧽', '🧴', '🛎️', '🔑', '🗝️', '🚪', '🪑', '🛋️', '🛏️', '🧸', '🖼️', '🛍️', '🛒', '🎁', '🎈', '🎏', '🎀', '🎊', '🎉', '🎎', '🏮', '🎐', '🧧', '✉️', '📩', '📨', '📧', '💌', '📥', '📤', '📦', '🏷️', '📪', '📫', '📬', '📭', '📮', '📯', '📜', '📃', '📄', '📑', '🧾', '📊', '📈', '📉', '🗒️', '🗓️', '📆', '📅', '🗑️', '📇', '🗃️', '🗳️', '🗄️', '📋', '📁', '📂', '🗂️', '🗞️', '📰', '📓', '📔', '📒', '📕', '📗', '📘', '📙', '📚', '📖', '🔖', '🧷', '🔗', '📎', '🖇️', '📏', '📐', '✂️', '🗃️', '📌', '📍', '🚩', '🏳️', '🏴', '🏁', '🚩', '🏳️‍🌈', '🏴‍☠️', '🇦🇫', '🇦🇽', '🇦🇱', '🇩🇿', '🇦🇸', '🇦🇩', '🇦🇴', '🇦🇮', '🇦🇶', '🇦🇬', '🇦🇷', '🇦🇲', '🇦🇼', '🇦🇺', '🇦🇹', '🇦🇿', '🇧🇸', '🇧🇭', '🇧🇩', '🇧🇧', '🇧🇾', '🇧🇪', '🇧🇿', '🇧🇯', '🇧🇲', '🇧🇹', '🇧🇴', '🇧🇦', '🇧🇼', '🇧🇷', '🇮🇴', '🇻🇬', '🇧🇳', '🇧🇬', '🇧🇫', '🇧🇮', '🇰🇭', '🇨🇲', '🇨🇦', '🇮🇨', '🇨🇻', '🇧🇶', '🇰🇾', '🇨🇫', '🇹🇩', '🇨🇱', '🇨🇳', '🇨🇽', '🇨🇨', '🇨🇴', '🇰🇲', '🇨🇬', '🇨🇩', '🇨🇰', '🇨🇷', '🇨🇮', '🇭🇷', '🇨🇺', '🇨🇼', '🇨🇾', '🇨🇿', '🇩🇰', '🇩🇯', '🇩🇲', '🇩🇴', '🇪🇨', '🇪🇬', '🇸🇻', '🇬🇶', '🇪🇷', '🇪🇪', '🇪🇹', '🇪🇺', '🇫🇰', '🇫🇴', '🇫🇯', '🇫🇮', '🇫🇷', '🇬🇫', '🇵🇫', '🇹🇫', '🇬🇦', '🇬🇲', '🇬🇪', '🇩🇪', '🇬🇭', '🇬🇮', '🇬🇷', '🇬🇱', '🇬🇩', '🇬🇵', '🇬🇺', '🇬🇹', '🇬🇬', '🇬🇳', '🇬🇼', '🇬🇾', '🇭🇹', '🇭🇳', '🇭🇰', '🇭🇺', '🇮🇸', '🇮🇳', '🇮🇩', '🇮🇷', '🇮🇶', '🇮🇪', '🇮🇲', '🇮🇱', '🇮🇹', '🇯🇲', '🇯🇵', '🏳️‍⚧️'],
+    nature: ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐽', '🐸', '🐵', '🙈', '🙉', '🙊', '🐒', '🐔', '🐧', '🐦', '🐤', '🐣', '🐥', '🦆', '🦅', '🦉', '🦇', '🐺', '🐗', '🐴', '🦄', '🐝', '🐛', '🦋', '🐌', '🐞', '🐜', '🦗', '🕷️', '🕸️', '🦂', '🐢', '🐍', '🦎', '🦖', '🦕', '🐙', '🦑', '🦐', '🦞', '🦀', '🐡', '🐠', '🐟', '🐬', '🐳', '🐋', '🦈', '🐊', '🐅', '🐆', '🦓', '🦍', '🦧', '🐘', '🦛', '🦏', '🐪', '🐫', '🦒', '🦘', '🐃', '🐂', '🐄', '🐎', '🐖', '🐏', '🐑', '🦙', '🐐', '🦌', '🐕', '🐩', '🦮', '🐕‍🦺', '🐈', '🐈‍⬛', '🐓', '🦃', '🦚', '🦜', '🦢', '🦩', '🐇', '🦝', '🦨', '🦡', '🦦', '🦥', '🐁', '🐀', '🦔', '🌵', '🎄', '🌲', '🌳', '🌴', '🌱', '🌿', '☘️', '🍀', '🎍', '🎋', '🍃', '🍂', '🍁', '🍄', '🐚', '🌾', '💐', '🌷', '🌹', '🥀', '🌺', '🌸', '🌼', '🌻', '🌞', '🌝', '🌛', '🌜', '🌚', '🌕', '🌖', '🌗', '🌘', '🌑', '🌒', '🌓', '🌔', '🌙', '🌎', '🌍', '🌏', '🪐', '💫', '⭐', '🌟', '✨', '⚡', '☄️', '💥', '🔥', '🌪️', '🌈', '☀️', '🌤️', '⛅', '🌥️', '☁️', '🌦️', '🌧️', '⛈️', '🌩️', '🌨️', '❄️', '☃️', '⛄', '🌬️', '💨', '💧', '💦', '☔', '☂️', '🌊', '🌫️'],
+    food: ['🍏', '🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🫐', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝', '🍅', '🍆', '🥑', '🥦', '🥬', '🥒', '🌶️', '🫑', '🌽', '🥕', '🫒', '🧄', '🧅', '🥔', '🍠', '🥐', '🥯', '🍞', '🥖', '🥨', '🧀', '🥚', '🍳', '🧈', '🥞', '🧇', '🥓', '🥩', '🍗', '🍖', '🦴', '🌭', '🍔', '🍟', '🍕', '🫓', '🥪', '🥙', '🧆', '🌮', '🌯', '🫔', '🥗', '🥘', '🫕', '🥫', '🍝', '🍜', '🍲', '🍛', '🍣', '🍱', '🥟', '🦪', '🍤', '🍙', '🍚', '🍘', '🍥', '🥠', '🥮', '🍢', '🍡', '🍧', '🍨', '🍦', '🥧', '🧁', '🍰', '🎂', '🍮', '🍭', '🍬', '🍫', '🍿', '🍩', '🍪', '🌰', '🥜', '🍯', '🥛', '🍼', '🫖', '☕', '🍵', '🧃', '🥤', '🍶', '🍺', '🍻', '🥂', '🍷', '🥃', '🍸', '🍹', '🧉', '🍾', '🧊', '🥄', '🍴', '🍽️', '🥣', '🥡', '🥢', '🧂']
+};
 
-// Инициализация при загрузке
+// ========== ИНИЦИАЛИЗАЦИЯ ==========
 document.addEventListener('DOMContentLoaded', function() {
-    // Проверяем, есть ли сохраненный пользователь
+    console.log(`🚀 ${CONFIG.appName} v${CONFIG.version} загружается...`);
+    
+    // Инициализация
+    initTheme();
+    initEventListeners();
+    initUI();
+    
+    // Проверка сохранённого пользователя
     const savedUser = localStorage.getItem('wave_user');
     if (savedUser) {
-        currentUser = JSON.parse(savedUser);
-        connectToServer();
+        try {
+            currentUser = JSON.parse(savedUser);
+            connectToServer();
+        } catch (e) {
+            console.error('Ошибка загрузки пользователя:', e);
+        }
     }
     
-    // Подключаем обработчики событий
-    setupEventListeners();
+    // Загрузка данных
+    loadChannels();
+    loadEmojis();
+    updateWelcomeStats();
+    
+    // Запуск фоновых задач
+    startBackgroundTasks();
 });
 
-// Подключение к серверу Socket.IO
-function connectToServer() {
-    socket = io();
+// ========== THEME ==========
+function initTheme() {
+    const savedTheme = localStorage.getItem('wave_theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
     
-    // Обработка подключения
-    socket.on('connect', () => {
-        console.log('Подключено к серверу');
-        
-        // Регистрируем пользователя
+    // Обновляем иконку темы
+    const themeIcon = document.querySelector('.theme-toggle i');
+    if (themeIcon) {
+        themeIcon.className = savedTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+    }
+}
+
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('wave_theme', newTheme);
+    
+    // Обновляем иконку
+    const themeIcon = document.querySelector('.theme-toggle i');
+    if (themeIcon) {
+        themeIcon.className = newTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+    }
+    
+    showNotification(`Тема изменена на ${newTheme === 'dark' ? 'тёмную' : 'светлую'}`, 'success');
+}
+
+// ========== SOCKET.IO ==========
+function connectToServer() {
+    if (socket?.connected) {
+        console.log('Socket уже подключен');
+        return;
+    }
+    
+    socket = io(CONFIG.serverUrl, {
+        reconnection: true,
+        reconnectionAttempts: CONFIG.reconnectAttempts,
+        reconnectionDelay: CONFIG.reconnectDelay,
+        transports: ['websocket', 'polling']
+    });
+    
+    // События
+    socket.on('connect', onSocketConnect);
+    socket.on('disconnect', onSocketDisconnect);
+    socket.on('connect_error', onSocketError);
+    
+    // Сообщения от сервера
+    socket.on('welcome', onWelcome);
+    socket.on('registered', onRegistered);
+    socket.on('message', onMessage);
+    socket.on('userJoined', onUserJoined);
+    socket.on('userLeft', onUserLeft);
+    socket.on('onlineUsers', onOnlineUsers);
+    socket.on('newChannel', onNewChannel);
+    socket.on('newPost', onNewPost);
+    socket.on('typing', onTyping);
+    socket.on('notification', onServerNotification);
+    socket.on('error', onError);
+    
+    // Админ события
+    socket.on('adminWelcome', onAdminWelcome);
+    socket.on('adminStats', onAdminStats);
+    socket.on('userKicked', onUserKicked);
+    
+    console.log('Попытка подключения к серверу...');
+}
+
+function onSocketConnect() {
+    console.log('✅ Подключено к серверу Socket.IO');
+    updateConnectionStatus(true);
+    
+    // Регистрируем пользователя
+    if (currentUser) {
         socket.emit('register', {
             username: currentUser.username,
             displayName: currentUser.displayName,
             avatarColor: currentUser.avatarColor
         });
-    });
+    }
     
-    // Получение начальных данных
-    socket.on('initialData', (data) => {
-        messages = data.messages || [];
-        posts = data.posts || [];
-        channels = data.channels || [];
-        users = data.users || [];
+    // Сбрасываем счётчик переподключений
+    reconnectCount = 0;
+    
+    // Показываем уведомление
+    showNotification('Подключено к серверу', 'success');
+}
+
+function onSocketDisconnect(reason) {
+    console.log('❌ Отключено от сервера:', reason);
+    updateConnectionStatus(false);
+    
+    if (reason === 'io server disconnect') {
+        // Сервер принудительно отключил
+        showNotification('Сервер отключил соединение', 'error');
+    } else {
+        // Пытаемся переподключиться
+        reconnectCount++;
+        const delay = Math.min(1000 * reconnectCount, 10000);
         
-        showApp();
-        updateUI();
-    });
-    
-    // Новое сообщение
-    socket.on('newMessage', (message) => {
-        messages.push(message);
-        if (document.getElementById('chatSection').classList.contains('active')) {
-            displayMessage(message);
-        }
-    });
-    
-    // Новый пост
-    socket.on('newPost', (post) => {
-        posts.unshift(post);
-        if (document.getElementById('feedSection').classList.contains('active')) {
-            displayPost(post);
-        }
-    });
-    
-    // Обновление поста
-    socket.on('postUpdated', (post) => {
-        const index = posts.findIndex(p => p.id === post.id);
-        if (index !== -1) {
-            posts[index] = post;
-            updatePostDisplay(post);
-        }
-    });
-    
-    // Новый канал
-    socket.on('newChannel', (channel) => {
-        channels.push(channel);
-        displayChannel(channel);
-    });
-    
-    // Обновление канала
-    socket.on('channelUpdated', (channel) => {
-        const index = channels.findIndex(c => c.id === channel.id);
-        if (index !== -1) {
-            channels[index] = channel;
-            updateChannelDisplay(channel);
-        }
-    });
-    
-    // Онлайн пользователи
-    socket.on('onlineUsers', (users) => {
-        onlineUsers = users;
-        updateOnlineList();
-    });
-    
-    // Пользователь присоединился
-    socket.on('userJoined', (user) => {
-        showNotification(`${user.displayName} присоединился(ась)`);
-    });
-    
-    // Пользователь вышел
-    socket.on('userLeft', (user) => {
-        showNotification(`${user.displayName} вышел(ла)`);
-    });
-}
-
-// Настройка обработчиков событий
-function setupEventListeners() {
-    // Навигация по страницам
-    document.getElementById('messageInput')?.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            sendMessage();
-        }
-    });
-    
-    document.getElementById('postInput')?.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter' && e.ctrlKey) {
-            createPost();
-        }
-    });
-}
-
-// Отображение приложения
-function showApp() {
-    document.getElementById('welcomePage').classList.remove('active');
-    document.getElementById('registerPage').classList.remove('active');
-    document.getElementById('loginPage').classList.remove('active');
-    document.getElementById('appPage').classList.add('active');
-    
-    // Показываем ленту по умолчанию
-    showSection('feed');
-}
-
-// Регистрация
-function register() {
-    const username = document.getElementById('regUsername').value.trim();
-    const displayName = document.getElementById('regDisplayName').value.trim();
-    const password = document.getElementById('regPassword').value.trim();
-    
-    // Простая валидация
-    if (!username || !displayName || !password) {
-        showNotification('Заполните все поля', 'error');
-        return;
+        showNotification(`Переподключение через ${delay/1000}сек... (${reconnectCount}/${CONFIG.reconnectAttempts})`, 'warning');
+        
+        setTimeout(() => {
+            if (reconnectCount < CONFIG.reconnectAttempts) {
+                socket.connect();
+            }
+        }, delay);
     }
-    
-    if (password.length < 6) {
-        showNotification('Пароль должен быть не короче 6 символов', 'error');
-        return;
-    }
+}
+
+function onSocketError(error) {
+    console.error('Ошибка подключения:', error);
+    showNotification('Ошибка подключения к серверу', 'error');
+}
+
+// ========== ОБРАБОТЧИКИ СОБЫТИЙ ==========
+function onWelcome(data) {
+    console.log('Приветствие от сервера:', data);
+    updateWelcomeStats(data);
+}
+
+function onRegistered(data) {
+    console.log('Зарегистрирован:', data);
+    currentUser = data.user;
     
     // Сохраняем пользователя
-    currentUser = {
-        id: Date.now().toString(),
-        username: username,
-        displayName: displayName,
-        avatarColor: avatarColors[Math.floor(Math.random() * avatarColors.length)],
-        password: password
-    };
-    
     localStorage.setItem('wave_user', JSON.stringify(currentUser));
     
-    // Подключаемся к серверу
-    connectToServer();
+    // Обновляем UI
+    updateUserUI(currentUser);
     
-    showNotification('Регистрация успешна!', 'success');
-}
-
-// Вход
-function login() {
-    const username = document.getElementById('loginUsername').value.trim();
-    const password = document.getElementById('loginPassword').value.trim();
-    
-    // В реальном приложении здесь была бы проверка с сервером
-    // Для демо просто создаем пользователя если его нет
-    const savedUser = localStorage.getItem('wave_user');
-    if (savedUser) {
-        const user = JSON.parse(savedUser);
-        if (user.username === username && user.password === password) {
-            currentUser = user;
-            connectToServer();
-            return;
-        }
+    // Загружаем данные
+    if (data.initialData) {
+        loadMessages(data.initialData.messages);
+        loadChannelsData(data.initialData.channels);
+        updateOnlineList(data.initialData.onlineUsers);
     }
     
-    showNotification('Неверный логин или пароль', 'error');
-}
-
-// Обновление UI
-function updateUI() {
-    // Обновляем информацию пользователя
-    if (currentUser) {
-        document.getElementById('userName').textContent = currentUser.displayName;
-        document.getElementById('userAvatar').textContent = currentUser.displayName[0];
-        document.getElementById('userAvatar').style.background = currentUser.avatarColor;
+    // Показываем приложение
+    showApp();
+    
+    // Админ доступ
+    if (currentUser.isAdmin) {
+        showAdminFeatures();
     }
     
-    // Загружаем данные для текущей секции
-    if (document.getElementById('feedSection').classList.contains('active')) {
-        loadPosts();
-    } else if (document.getElementById('chatSection').classList.contains('active')) {
-        loadMessages();
-    } else if (document.getElementById('channelsSection').classList.contains('active')) {
-        loadChannels();
+    showNotification(`Добро пожаловать, ${currentUser.displayName}!`, 'success');
+}
+
+function onMessage(message) {
+    console.log('Новое сообщение:', message);
+    
+    // Добавляем в очередь
+    messageQueue.push(message);
+    
+    // Отображаем сообщение
+    displayMessage(message);
+    
+    // Обновляем счётчик непрочитанных
+    if (!isMessageVisible(message)) {
+        updateUnreadCount(1);
+    }
+    
+    // Воспроизводим звук
+    if (CONFIG.features.sounds && message.userId !== currentUser?.id) {
+        playNotificationSound();
+    }
+    
+    // Показываем уведомление (если не в активном окне)
+    if (document.hidden && message.userId !== currentUser?.id) {
+        showDesktopNotification(message);
     }
 }
 
-// Переключение секций
-function showSection(sectionName) {
+function onUserJoined(data) {
+    console.log('Пользователь присоединился:', data);
+    
+    // Обновляем список онлайн
+    if (data.user) {
+        addOnlineUser(data.user);
+    }
+    
+    // Показываем уведомление
+    if (data.user && data.user.id !== currentUser?.id) {
+        showNotification(`${data.user.displayName} присоединился`, 'info');
+    }
+}
+
+function onUserLeft(data) {
+    console.log('Пользователь вышел:', data);
+    
+    // Обновляем список онлайн
+    if (data.userId) {
+        removeOnlineUser(data.userId);
+    }
+    
+    // Обновляем счётчик
+    updateOnlineCounter();
+}
+
+function onOnlineUsers(users) {
+    console.log('Онлайн пользователи:', users);
+    updateOnlineList(users);
+}
+
+function onNewChannel(channel) {
+    console.log('Новый канал:', channel);
+    addChannel(channel);
+}
+
+function onNewPost(post) {
+    console.log('Новый пост:', post);
+    displayPost(post);
+}
+
+function onTyping(data) {
+    console.log('Печатает:', data);
+    showTypingIndicator(data.username, data.isTyping);
+}
+
+function onServerNotification(data) {
+    console.log('Уведомление от сервера:', data);
+    showNotification(data.message, data.type || 'info');
+}
+
+function onError(data) {
+    console.error('Ошибка от сервера:', data);
+    showNotification(data.message || 'Ошибка сервера', 'error');
+}
+
+// ========== АДМИН СИСТЕМА ==========
+function onAdminWelcome(data) {
+    console.log('Админ приветствие:', data);
+    
+    // Показываем секретные функции
+    showAdminFeatures();
+    
+    // Сохраняем ключ
+    localStorage.setItem('wave_admin_key', data.secretKey);
+    
+    // Специальное уведомление
+    showNotification(`👑 Добро пожаловать в админ-панель, ${currentUser.displayName}!`, 'success');
+}
+
+function onAdminStats(data) {
+    console.log('Админ статистика:', data);
+    updateAdminStats(data);
+}
+
+function onUserKicked(data) {
+    console.log('Пользователь кикнут:', data);
+    showNotification(`Пользователь ${data.username} был отключён администратором`, 'warning');
+}
+
+// ========== UI ФУНКЦИИ ==========
+function showWelcome() {
+    switchPage('welcomePage');
+    document.title = `${CONFIG.appName} - Главная`;
+}
+
+function showRegister() {
+    switchPage('registerPage');
+    document.title = `${CONFIG.appName} - Регистрация`;
+}
+
+function showLogin() {
+    switchPage('loginPage');
+    document.title = `${CONFIG.appName} - Вход`;
+}
+
+function showApp() {
+    switchPage('appPage');
+    document.title = `${CONFIG.appName} - Чат`;
+    updateUI();
+}
+
+function showSection(sectionId) {
     // Скрываем все секции
     document.querySelectorAll('.section').forEach(section => {
         section.classList.remove('active');
     });
     
-    // Обновляем активные кнопки
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.classList.remove('active');
+    // Скрываем все навигационные кнопки
+    document.querySelectorAll('.nav-item, .nav-btn').forEach(nav => {
+        nav.classList.remove('active');
     });
     
     // Показываем выбранную секцию
-    document.getElementById(sectionName + 'Section').classList.add('active');
-    
-    // Обновляем навигацию
-    const navItem = document.querySelector(`.nav-item[onclick*="${sectionName}"]`);
-    if (navItem) navItem.classList.add('active');
-    
-    const navBtn = document.querySelector(`.nav-btn[onclick*="${sectionName}"]`);
-    if (navBtn) navBtn.classList.add('active');
-    
-    // Загружаем данные
-    switch(sectionName) {
-        case 'feed':
-            loadPosts();
-            break;
-        case 'chat':
-            loadMessages();
-            break;
-        case 'channels':
-            loadChannels();
-            break;
-        case 'online':
-            updateOnlineList();
-            break;
-        case 'profile':
-            loadProfile();
-            break;
+    const section = document.getElementById(sectionId + 'Section');
+    if (section) {
+        section.classList.add('active');
     }
+    
+    // Активируем соответствующую кнопку
+    const navItem = document.querySelector(`[onclick*="${sectionId}"]`);
+    if (navItem) {
+        navItem.classList.add('active');
+    }
+    
+    // Обновляем заголовок
+    updateSectionTitle(sectionId);
+    
+    // Загружаем данные для секции
+    loadSectionData(sectionId);
 }
 
-// Загрузка постов
-function loadPosts() {
-    const container = document.getElementById('postsContainer');
+function switchPage(pageId) {
+    // Анимация перехода
+    document.querySelectorAll('.page').forEach(page => {
+        if (page.classList.contains('active')) {
+            page.style.animation = 'fadeOut 0.3s forwards';
+            setTimeout(() => {
+                page.classList.remove('active');
+                page.style.animation = '';
+            }, 300);
+        }
+    });
     
-    if (posts.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <i class="fas fa-newspaper"></i>
-                <p>Здесь пока нет постов. Будьте первым!</p>
-            </div>
-        `;
+    setTimeout(() => {
+        const targetPage = document.getElementById(pageId);
+        if (targetPage) {
+            targetPage.classList.add('active');
+            targetPage.style.animation = 'fadeIn 0.3s forwards';
+        }
+    }, 300);
+}
+
+// ========== СООБЩЕНИЯ ==========
+function sendMessage() {
+    if (!socket || !socket.connected) {
+        showNotification('Нет подключения к серверу', 'error');
         return;
     }
     
-    container.innerHTML = '';
-    posts.forEach(post => {
-        displayPost(post);
-    });
-}
-
-// Отображение поста
-function displayPost(post) {
-    const container = document.getElementById('postsContainer');
+    const input = document.getElementById('messageInput');
+    const text = input?.value.trim();
     
-    const postElement = document.createElement('div');
-    postElement.className = 'post';
-    postElement.id = `post_${post.id}`;
+    if (!text) return;
     
-    const user = users.find(u => u.username === post.username) || post;
-    const timeAgo = getTimeAgo(new Date(post.createdAt));
+    // Создаём сообщение
+    const message = {
+        text: text,
+        channel: currentChannel,
+        timestamp: new Date().toISOString()
+    };
     
-    postElement.innerHTML = `
-        <div class="post-header">
-            <div class="avatar" style="background: ${user.avatarColor || avatarColors[0]}">
-                ${user.displayName ? user.displayName[0] : 'U'}
-            </div>
-            <div>
-                <h4>${post.displayName}</h4>
-                <p class="post-time">@${post.username} · ${timeAgo}</p>
-            </div>
-        </div>
-        <div class="post-content">${escapeHtml(post.content)}</div>
-        <div class="post-actions">
-            <span onclick="likePost('${post.id}')">
-                <i class="fas fa-heart"></i> ${post.likes.length || 0}
-            </span>
-            <span onclick="commentOnPost('${post.id}')">
-                <i class="fas fa-comment"></i> ${post.comments.length || 0}
-            </span>
-        </div>
-    `;
+    // Отправляем на сервер
+    socket.emit('message', message);
     
-    container.prepend(postElement);
-}
-
-// Создание поста
-function createPost() {
-    const content = document.getElementById('postInput').value.trim();
-    
-    if (!content) {
-        showNotification('Введите текст поста', 'warning');
-        return;
+    // Очищаем поле ввода
+    if (input) {
+        input.value = '';
+        autoResizeTextarea(input);
     }
     
-    if (!socket || !currentUser) {
-        showNotification('Соединение потеряно', 'error');
-        return;
+    // Сбрасываем индикатор набора
+    if (isTyping) {
+        socket.emit('typing', false);
+        isTyping = false;
     }
-    
-    socket.emit('createPost', {
-        content: content
-    });
-    
-    document.getElementById('postInput').value = '';
-    showNotification('Пост отправлен!', 'success');
 }
 
-// Лайк поста
-function likePost(postId) {
-    if (!socket || !currentUser) return;
-    
-    socket.emit('likePost', {
-        postId: postId,
-        userId: currentUser.id
-    });
-}
-
-// Загрузка сообщений
-function loadMessages() {
-    const container = document.getElementById('messagesContainer');
-    
-    if (messages.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <i class="fas fa-comments"></i>
-                <p>Начните общение в общем чате!</p>
-            </div>
-        `;
-        return;
-    }
-    
-    container.innerHTML = '';
-    messages.forEach(message => {
-        displayMessage(message);
-    });
-    
-    // Прокручиваем вниз
-    container.scrollTop = container.scrollHeight;
-}
-
-// Отображение сообщения
 function displayMessage(message) {
     const container = document.getElementById('messagesContainer');
-    const isCurrentUser = message.sender.username === currentUser?.username;
+    if (!container) return;
     
-    const messageElement = document.createElement('div');
-    messageElement.className = `message ${isCurrentUser ? 'sent' : ''}`;
+    // Проверяем, это бот или пользователь
+    const isBot = message.user?.isBot || message.isBot;
+    const isCurrentUser = message.userId === currentUser?.id;
     
-    const time = new Date(message.timestamp).toLocaleTimeString([], { 
-        hour: '2-digit', 
-        minute: '2-digit' 
+    // Создаём элемент сообщения
+    const messageEl = document.createElement('div');
+    messageEl.className = `message ${isCurrentUser ? 'sent' : 'received'} ${isBot ? 'bot-message' : ''}`;
+    messageEl.dataset.id = message.id;
+    
+    // Форматируем время
+    const time = new Date(message.time || message.timestamp).toLocaleTimeString('ru-RU', {
+        hour: '2-digit',
+        minute: '2-digit'
     });
     
-    messageElement.innerHTML = `
-        <div class="message-header">
-            <div class="avatar" style="background: ${message.sender.avatarColor}">
-                ${message.sender.displayName ? message.sender.displayName[0] : 'U'}
-            </div>
-            <div>
-                <strong>${message.sender.displayName}</strong>
+    // Аватар
+    const avatarColor = message.user?.avatarColor || getRandomColor();
+    const avatarText = message.user?.displayName?.[0] || '?';
+    
+    // Содержимое
+    messageEl.innerHTML = `
+        <div class="message-avatar" style="background: ${avatarColor}">
+            ${avatarText}
+        </div>
+        <div class="message-content">
+            <div class="message-header">
+                <span class="message-sender">
+                    ${message.user?.displayName || 'Неизвестный'}
+                    ${message.user?.isAdmin ? ' 👑' : ''}
+                    ${isBot ? ' 🤖' : ''}
+                </span>
                 <span class="message-time">${time}</span>
             </div>
+            <div class="message-text">${formatMessageText(message.text)}</div>
+            ${message.reactions ? renderReactions(message.reactions) : ''}
         </div>
-        <div class="message-text">${escapeHtml(message.text)}</div>
-    `;
-    
-    container.appendChild(messageElement);
-    
-    // Прокручиваем вниз
-    container.scrollTop = container.scrollHeight;
-}
-
-// Отправка сообщения
-function sendMessage() {
-    const input = document.getElementById('messageInput');
-    const text = input.value.trim();
-    
-    if (!text) {
-        showNotification('Введите сообщение', 'warning');
-        return;
-    }
-    
-    if (!socket || !currentUser) {
-        showNotification('Соединение потеряно', 'error');
-        return;
-    }
-    
-    socket.emit('sendMessage', {
-        text: text,
-        channelId: 'general'
-    });
-    
-    input.value = '';
-}
-
-// Загрузка каналов
-function loadChannels() {
-    const container = document.getElementById('channelsContainer');
-    
-    // Всегда показываем общий канал
-    container.innerHTML = `
-        <div class="channel">
-            <div class="channel-info">
-                <i class="fas fa-hashtag"></i>
-                <div>
-                    <h4>general</h4>
-                    <p>Основной канал для общения</p>
-                </div>
-            </div>
-            <button class="btn btn-primary" onclick="joinChannel('general')">
-                Присоединиться
+        <div class="message-actions">
+            <button onclick="reactToMessage('${message.id}', '👍')" title="Нравится">
+                👍
+            </button>
+            <button onclick="replyToMessage('${message.id}')" title="Ответить">
+                <i class="fas fa-reply"></i>
             </button>
         </div>
     `;
     
-    // Добавляем остальные каналы
-    channels.forEach(channel => {
-        displayChannel(channel);
+    // Добавляем в контейнер
+    container.appendChild(messageEl);
+    
+    // Прокручиваем вниз
+    setTimeout(() => {
+        container.scrollTop = container.scrollHeight;
+    }, 100);
+}
+
+function formatMessageText(text) {
+    if (!text) return '';
+    
+    // Заменяем ссылки
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    text = text.replace(urlRegex, url => {
+        return `<a href="${url}" target="_blank" class="message-link">${url}</a>`;
+    });
+    
+    // Заменяем переносы строк
+    text = text.replace(/\n/g, '<br>');
+    
+    // Обрабатываем команды AI
+    if (text.startsWith('/ai ') || text.startsWith('/img ') || text.includes('@waveai')) {
+        text = `<span class="ai-highlight">${text}</span>`;
+    }
+    
+    return text;
+}
+
+// ========== WAVE AI ==========
+function sendAiMessage() {
+    const input = document.getElementById('aiInput');
+    const text = input?.value.trim();
+    
+    if (!text || !socket) return;
+    
+    // Отправляем сообщение в общий чат
+    socket.emit('message', {
+        text: text,
+        channel: currentChannel,
+        timestamp: new Date().toISOString()
+    });
+    
+    // Также отправляем в AI чат
+    addAiMessage(text, 'user');
+    
+    // Очищаем поле
+    if (input) {
+        input.value = '';
+    }
+    
+    // Показываем индикатор загрузки
+    showAiLoading(true);
+    
+    // Имитируем ответ AI
+    setTimeout(() => {
+        showAiLoading(false);
+        const aiResponse = generateAiResponse(text);
+        addAiMessage(aiResponse, 'bot');
+    }, 1000 + Math.random() * 2000);
+}
+
+function generateAiResponse(prompt) {
+    const responses = [
+        `🤖 **WaveAI:** Отличный вопрос! "${prompt.substring(0, 30)}..." - интересная тема!`,
+        `✨ **AI:** Я думаю над вашим вопросом... Возможно, стоит обсудить это в основном чате?`,
+        `🧠 **ИИ:** "${prompt.substring(0, 20)}..." - сложная тема! Нужно больше контекста.`,
+        `💡 **WaveAI:** Попробуйте использовать команду /ai для более детального ответа!`
+    ];
+    
+    return responses[Math.floor(Math.random() * responses.length)];
+}
+
+function addAiMessage(text, type = 'user') {
+    const container = document.getElementById('aiChatMessages');
+    if (!container) return;
+    
+    const messageEl = document.createElement('div');
+    messageEl.className = `ai-message ai-message-${type}`;
+    
+    const time = new Date().toLocaleTimeString('ru-RU', {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    
+    messageEl.innerHTML = `
+        <div class="ai-message-avatar">
+            <i class="fas fa-${type === 'user' ? 'user' : 'robot'}"></i>
+        </div>
+        <div class="ai-message-content">
+            <div class="ai-message-text">${formatMessageText(text)}</div>
+            <div class="ai-message-time">${time}</div>
+        </div>
+    `;
+    
+    container.appendChild(messageEl);
+    
+    // Прокручиваем вниз
+    setTimeout(() => {
+        container.scrollTop = container.scrollHeight;
+    }, 100);
+}
+
+// ========== АДМИН ФУНКЦИИ ==========
+function showAdminFeatures() {
+    // Показываем админ пункт в навигации
+    const adminNav = document.getElementById('adminNavItem');
+    if (adminNav) {
+        adminNav.style.display = 'flex';
+    }
+    
+    // Добавляем админ бейдж
+    const userBadge = document.getElementById('userBadge');
+    if (userBadge) {
+        userBadge.innerHTML = '👑';
+        userBadge.title = 'Администратор';
+    }
+    
+    // Добавляем админ CSS класс
+    document.body.classList.add('admin-mode');
+}
+
+function refreshAdminStats() {
+    if (!socket || !currentUser?.isAdmin) return;
+    
+    socket.emit('admin', {
+        action: 'stats'
+    });
+    
+    showNotification('Обновление статистики...', 'info');
+}
+
+function adminSendAnnouncement() {
+    const text = prompt('Введите текст анонса:');
+    if (!text) return;
+    
+    if (socket && currentUser?.isAdmin) {
+        socket.emit('admin', {
+            action: 'announce',
+            text: text
+        });
+        
+        showNotification('Анонс отправлен!', 'success');
+    }
+}
+
+// ========== УТИЛИТЫ ==========
+function updateConnectionStatus(connected) {
+    const statusEl = document.getElementById('connectionStatus');
+    if (statusEl) {
+        statusEl.innerHTML = connected 
+            ? '<i class="fas fa-wifi"></i> <span>Онлайн</span>'
+            : '<i class="fas fa-wifi-slash"></i> <span>Офлайн</span>';
+        statusEl.className = connected ? 'connection-status connection-connected' : 'connection-status connection-disconnected';
+    }
+}
+
+function updateOnlineCounter() {
+    const counter = document.getElementById('onlineCounter');
+    if (counter) {
+        const count = onlineUsers.length;
+        counter.querySelector('span').textContent = count;
+        counter.title = `${count} пользователей онлайн`;
+    }
+}
+
+function updateUnreadCount(count) {
+    // Обновляем все счётчики непрочитанных
+    const elements = [
+        document.getElementById('unreadCount'),
+        document.getElementById('mobileUnread'),
+        document.querySelector('.nav-item[onclick*="chat"] .nav-badge')
+    ];
+    
+    elements.forEach(el => {
+        if (el) {
+            const current = parseInt(el.textContent) || 0;
+            el.textContent = current + count;
+            el.style.display = current + count > 0 ? 'flex' : 'none';
+        }
     });
 }
 
-// Отображение канала
-function displayChannel(channel) {
-    const container = document.getElementById('channelsContainer');
-    
-    const channelElement = document.createElement('div');
-    channelElement.className = 'channel';
-    channelElement.id = `channel_${channel.id}`;
-    
-    channelElement.innerHTML = `
-        <div class="channel-info">
-            <i class="fas fa-hashtag"></i>
-            <div>
-                <h4>${channel.name}</h4>
-                <p>${channel.description}</p>
-                <small>Создал: ${channel.owner} · ${channel.members.length} участников</small>
-            </div>
-        </div>
-        <button class="btn btn-primary" onclick="joinChannel('${channel.id}')">
-            Присоединиться
+function showNotification(message, type = 'info') {
+    // Создаём элемент уведомления
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+        <i class="fas fa-${getNotificationIcon(type)}"></i>
+        <span>${message}</span>
+        <button class="notification-close" onclick="this.parentElement.remove()">
+            <i class="fas fa-times"></i>
         </button>
     `;
     
-    container.appendChild(channelElement);
-}
-
-// Присоединение к каналу
-function joinChannel(channelId) {
-    if (!socket) return;
-    
-    socket.emit('joinChannel', channelId);
-    showNotification('Вы присоединились к каналу', 'success');
-}
-
-// Создание канала
-function createChannel() {
-    const name = document.getElementById('channelName').value.trim();
-    const desc = document.getElementById('channelDesc').value.trim();
-    
-    if (!name) {
-        showNotification('Введите название канала', 'warning');
-        return;
+    // Добавляем в контейнер
+    const container = document.getElementById('notificationContainer');
+    if (container) {
+        container.appendChild(notification);
+        
+        // Анимация
+        setTimeout(() => notification.classList.add('show'), 10);
+        
+        // Авто-удаление
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        }, 5000);
     }
     
-    if (!socket || !currentUser) return;
-    
-    socket.emit('createChannel', {
-        name: name,
-        description: desc,
-        type: 'public'
-    });
-    
-    closeModal();
-    document.getElementById('channelName').value = '';
-    document.getElementById('channelDesc').value = '';
-    showNotification('Канал создан!', 'success');
+    // Звук
+    if (CONFIG.features.sounds) {
+        playNotificationSound(type);
+    }
 }
 
-// Обновление списка онлайн пользователей
-function updateOnlineList() {
-    const container = document.getElementById('onlineUsersList');
-    const countElement = document.getElementById('onlineCount');
+function getNotificationIcon(type) {
+    const icons = {
+        success: 'check-circle',
+        error: 'exclamation-circle',
+        warning: 'exclamation-triangle',
+        info: 'info-circle'
+    };
+    return icons[type] || 'bell';
+}
+
+function playNotificationSound(type = 'info') {
+    if (!CONFIG.features.sounds) return;
     
-    if (countElement) {
-        countElement.textContent = onlineUsers.length;
+    const audio = new Audio();
+    audio.volume = 0.3;
+    
+    // Разные звуки для разных типов
+    switch(type) {
+        case 'success':
+            audio.src = 'https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3';
+            break;
+        case 'error':
+            audio.src = 'https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3';
+            break;
+        default:
+            audio.src = 'https://assets.mixkit.co/sfx/preview/mixkit-message-pop-alert-2354.mp3';
     }
     
-    if (!container) return;
-    
-    if (onlineUsers.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <i class="fas fa-users"></i>
-                <p>Никого нет онлайн</p>
-            </div>
-        `;
-        return;
+    audio.play().catch(e => console.log('Звук не воспроизведён:', e));
+}
+
+// ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
+function autoResizeTextarea(textarea) {
+    textarea.style.height = 'auto';
+    textarea.style.height = textarea.scrollHeight + 'px';
+}
+
+function handleMessageKeydown(event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
     }
     
-    container.innerHTML = onlineUsers.map(user => `
-        <div class="user-item">
-            <div class="avatar" style="background: ${user.avatarColor}">
-                ${user.displayName ? user.displayName[0] : 'U'}
-            </div>
-            <div>
-                <strong>${user.displayName}</strong>
-                <p>@${user.username}</p>
-            </div>
-        </div>
-    `).join('');
+    // Индикатор набора текста
+    if (socket) {
+        if (!isTyping) {
+            isTyping = true;
+            socket.emit('typing', true);
+        }
+        
+        clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(() => {
+            if (isTyping) {
+                isTyping = false;
+                socket.emit('typing', false);
+            }
+        }, 1000);
+    }
 }
 
-// Загрузка профиля
-function loadProfile() {
-    const container = document.getElementById('profileContent');
+function showTypingIndicator(username, isTyping) {
+    const indicator = document.getElementById('typingIndicator');
+    const text = document.getElementById('typingText');
     
-    if (!currentUser) return;
+    if (indicator && text) {
+        if (isTyping) {
+            text.textContent = `${username} печатает...`;
+            indicator.style.display = 'flex';
+        } else {
+            indicator.style.display = 'none';
+        }
+    }
+}
+
+function toggleEmojiPicker() {
+    const picker = document.getElementById('emojiPicker');
+    if (picker) {
+        picker.classList.toggle('show');
+    }
+}
+
+function insertEmoji(emoji) {
+    const input = document.getElementById('messageInput');
+    if (input) {
+        const start = input.selectionStart;
+        const end = input.selectionEnd;
+        input.value = input.value.substring(0, start) + emoji + input.value.substring(end);
+        input.focus();
+        input.selectionStart = input.selectionEnd = start + emoji.length;
+        autoResizeTextarea(input);
+    }
     
-    container.innerHTML = `
-        <div class="profile-header">
-            <div class="avatar-large" style="background: ${currentUser.avatarColor}">
-                ${currentUser.displayName ? currentUser.displayName[0] : 'U'}
-            </div>
-            <h2>${currentUser.displayName}</h2>
-            <p>@${currentUser.username}</p>
-        </div>
-        <div class="profile-stats">
-            <div class="stat">
-                <strong>${posts.filter(p => p.username === currentUser.username).length}</strong>
-                <span>Постов</span>
-            </div>
-            <div class="stat">
-                <strong>${onlineUsers.filter(u => u.username !== currentUser.username).length}</strong>
-                <span>Онлайн</span>
-            </div>
-        </div>
-        <div class="profile-actions">
-            <button class="btn btn-secondary" onclick="editProfile()">
-                <i class="fas fa-edit"></i> Редактировать
-            </button>
-            <button class="btn btn-secondary" onclick="logout()">
-                <i class="fas fa-sign-out-alt"></i> Выйти
-            </button>
-        </div>
-    `;
+    // Закрываем пикер
+    const picker = document.getElementById('emojiPicker');
+    if (picker) {
+        picker.classList.remove('show');
+    }
 }
 
-// Управление модальными окнами
-function showNewChannelModal() {
-    document.getElementById('newChannelModal').classList.add('active');
-}
+// ========== ЭКСПОРТ ФУНКЦИЙ ==========
+// Функции, которые вызываются из HTML
+window.showWelcome = showWelcome;
+window.showRegister = showRegister;
+window.showLogin = showLogin;
+window.showApp = showApp;
+window.showSection = showSection;
+window.toggleSidebar = toggleSidebar;
+window.toggleTheme = toggleTheme;
+window.toggleEmojiPicker = toggleEmojiPicker;
+window.insertEmoji = insertEmoji;
+window.sendMessage = sendMessage;
+window.sendAiMessage = sendAiMessage;
+window.refreshAdminStats = refreshAdminStats;
+window.adminSendAnnouncement = adminSendAnnouncement;
+window.logout = logout;
 
-function closeModal() {
-    document.getElementById('newChannelModal').classList.remove('active');
-}
-
-// Управление боковым меню
-function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('active');
-}
-
-// Навигация по страницам
-function showWelcome() {
-    document.getElementById('registerPage').classList.remove('active');
-    document.getElementById('loginPage').classList.remove('active');
-    document.getElementById('appPage').classList.remove('active');
-    document.getElementById('welcomePage').classList.add('active');
-}
-
-function showRegister() {
-    document.getElementById('welcomePage').classList.remove('active');
-    document.getElementById('loginPage').classList.remove('active');
-    document.getElementById('appPage').classList.remove('active');
-    document.getElementById('registerPage').classList.add('active');
-}
-
-function showLogin() {
-    document.getElementById('welcomePage').classList.remove('active');
-    document.getElementById('registerPage').classList.remove('active');
-    document.getElementById('appPage').classList.remove('active');
-    document.getElementById('loginPage').classList.add('active');
-}
-
-// Выход
+// Дополнительные функции
 function logout() {
     if (socket) {
         socket.disconnect();
     }
     
     localStorage.removeItem('wave_user');
+    localStorage.removeItem('wave_admin_key');
     currentUser = null;
+    
     showWelcome();
+    showNotification('Вы вышли из системы', 'success');
 }
 
-// Уведомления
-function showNotification(message, type = 'info') {
-    const notification = document.getElementById('notification');
-    const text = document.getElementById('notificationText');
-    
-    text.textContent = message;
-    notification.classList.add('show');
-    
-    setTimeout(() => {
-        notification.classList.remove('show');
-    }, 3000);
-}
-
-// Вспомогательные функции
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-function getTimeAgo(date) {
-    const seconds = Math.floor((new Date() - date) / 1000);
-    
-    const intervals = {
-        год: 31536000,
-        месяц: 2592000,
-        неделя: 604800,
-        день: 86400,
-        час: 3600,
-        минута: 60,
-        секунда: 1
-    };
-    
-    for (const [name, secondsIn] of Object.entries(intervals)) {
-        const interval = Math.floor(seconds / secondsIn);
-        if (interval >= 1) {
-            return `${interval} ${name}${interval >= 2 && interval <= 4 ? 'а' : interval >= 5 && interval <= 20 ? 'ов' : name === 'месяц' ? 'ев' : name === 'день' ? 'дней' : 'ов'}`;
-        }
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('show');
     }
-    
-    return 'только что';
 }
 
-// Поиск пользователей (демо)
-function searchUsers() {
-    const query = document.getElementById('userSearch').value.toLowerCase();
-    const results = document.getElementById('searchResults');
-    
-    if (!query) {
-        results.innerHTML = '<p>Введите поисковый запрос</p>';
-        return;
-    }
-    
-    const filteredUsers = users.filter(user => 
-        user.username.toLowerCase().includes(query) ||
-        user.displayName.toLowerCase().includes(query)
-    );
-    
-    if (filteredUsers.length === 0) {
-        results.innerHTML = '<p>Пользователи не найдены</p>';
-        return;
-    }
-    
-    results.innerHTML = filteredUsers.map(user => `
-        <div class="user-item">
-            <div class="avatar" style="background: ${user.avatarColor}">
-                ${user.displayName ? user.displayName[0] : 'U'}
-            </div>
-            <div>
-                <strong>${user.displayName}</strong>
-                <p>@${user.username}</p>
-                <button class="btn btn-small" onclick="sendMessageToUser('${user.username}')">
-                    Написать
-                </button>
-            </div>
-        </div>
-    `).join('');
-}
-// В клиенте (public/script.js):
-const socket = io('https://wavemessenger.onrender.com');
+console.log('✅ Клиентский скрипт WaveMessenger Pro загружен!');
