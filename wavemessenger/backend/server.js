@@ -1,101 +1,165 @@
-const socket = io();
+// ========== ИМПОРТЫ ==========
+const express = require('express');
+const http = require('http');
+const socketIO = require('socket.io'); // ← ДОБАВЬТЕ ЭТО!
+const path = require('path');
+const fs = require('fs');
 
-let currentUser = null;
-
-// Подключение
-socket.on('connect', () => {
-    console.log('✅ Подключено к серверу');
-    updateStatus('✅ Подключено', 'success');
+// ========== НАСТРОЙКА ==========
+const app = express();
+const server = http.createServer(app);
+const io = socketIO(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
 });
 
-socket.on('welcome', (data) => {
-    console.log('Приветствие:', data);
-});
+// ========== ПУТИ ==========
+const projectRoot = path.join(__dirname, '..');
+const publicDir = path.join(projectRoot, 'public');
 
-// Регистрация
-function login() {
-    const username = document.getElementById('username').value.trim();
-    if (!username) return alert('Введите имя');
-    
-    currentUser = {
-        username: username,
-        displayName: username,
-        avatarColor: getRandomColor()
-    };
-    
-    socket.emit('register', currentUser);
-    
-    document.getElementById('loginForm').style.display = 'none';
-    document.getElementById('chat').style.display = 'block';
-    document.getElementById('messageInput').focus();
+console.log('🚀 Запуск WaveMessenger...');
+console.log('📁 Текущая папка:', __dirname);
+console.log('📁 Корень проекта:', projectRoot);
+console.log('📁 Папка public:', publicDir);
+
+// ========== СТАТИКА ==========
+if (fs.existsSync(publicDir)) {
+    console.log('✅ Public папка найдена');
+    app.use(express.static(publicDir));
+    app.get('/', (req, res) => {
+        res.sendFile(path.join(publicDir, 'index.html'));
+    });
+} else {
+    console.log('⚠️ Public папка не найдена, показываем заглушку');
+    app.get('/', (req, res) => {
+        res.send(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>WaveMessenger 🌊</title>
+                <style>
+                    body { font-family: Arial; padding: 40px; background: #0a192f; color: white; text-align: center; }
+                    h1 { color: #00d4ff; }
+                    .box { background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; margin: 20px auto; max-width: 600px; }
+                    .success { color: #00ffaa; }
+                </style>
+            </head>
+            <body>
+                <h1>🌊 WaveMessenger</h1>
+                <div class="box">
+                    <h2 class="success">✅ Сервер запущен!</h2>
+                    <p>Socket.IO работает нормально</p>
+                    <p>Но не найдена папка <code>public/</code></p>
+                    <p>Создайте папку <code>public</code> с файлами:</p>
+                    <ul style="text-align: left; display: inline-block;">
+                        <li><code>index.html</code></li>
+                        <li><code>style.css</code></li>
+                        <li><code>script.js</code></li>
+                    </ul>
+                </div>
+                <div id="status">Подключение к Socket.IO...</div>
+                <script src="/socket.io/socket.io.js"></script>
+                <script>
+                    const socket = io();
+                    socket.on('connect', () => {
+                        document.getElementById('status').innerHTML = 
+                            '<span class="success">✅ Socket.IO подключен!</span>';
+                    });
+                </script>
+            </body>
+            </html>
+        `);
+    });
 }
 
-// Отправка сообщения
-function sendMessage() {
-    const input = document.getElementById('messageInput');
-    const text = input.value.trim();
-    
-    if (!text) return;
-    
-    socket.emit('sendMessage', { text });
-    input.value = '';
-}
-
-// Получение сообщений
-socket.on('newMessage', (message) => {
-    displayMessage(message);
+// ========== ДОПОЛНИТЕЛЬНЫЕ МАРШРУТЫ ==========
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
-socket.on('initialData', (data) => {
-    console.log('Получены данные:', data);
-    data.messages.forEach(displayMessage);
+app.get('/api/debug', (req, res) => {
+    const files = fs.existsSync(publicDir) ? fs.readdirSync(publicDir) : [];
+    res.json({
+        dir: __dirname,
+        publicExists: fs.existsSync(publicDir),
+        files: files
+    });
 });
 
-// Отображение сообщения
-function displayMessage(message) {
-    const messagesDiv = document.getElementById('messages');
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'message';
+// ========== SOCKET.IO ==========
+const users = new Map();
+
+io.on('connection', (socket) => {
+    console.log('👤 Подключен:', socket.id);
     
-    const time = new Date(message.timestamp).toLocaleTimeString([], { 
-        hour: '2-digit', 
-        minute: '2-digit' 
+    // Приветствие
+    socket.emit('welcome', {
+        message: 'Добро пожаловать в WaveMessenger!',
+        id: socket.id,
+        online: users.size + 1
     });
     
-    messageDiv.innerHTML = `
-        <strong style="color: ${message.sender.avatarColor}">
-            ${message.sender.displayName}
-        </strong>
-        <span style="color: #8892b0; font-size: 0.9rem; margin-left: 10px;">
-            ${time}
-        </span>
-        <div style="margin-top: 5px;">${escapeHtml(message.text)}</div>
-    `;
+    // Регистрация
+    socket.on('register', (data) => {
+        const user = {
+            id: socket.id,
+            username: data.username || `user_${socket.id.substring(0, 6)}`,
+            displayName: data.displayName || 'Гость',
+            color: data.color || '#0066ff'
+        };
+        users.set(socket.id, user);
+        
+        socket.emit('registered', user);
+        socket.broadcast.emit('userJoined', user);
+        
+        console.log(`✅ Зарегистрирован: ${user.displayName}`);
+    });
     
-    messagesDiv.appendChild(messageDiv);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-}
+    // Сообщения
+    socket.on('message', (data) => {
+        const user = users.get(socket.id);
+        if (!user || !data.text) return;
+        
+        const message = {
+            id: Date.now(),
+            user: user,
+            text: data.text,
+            time: new Date().toISOString()
+        };
+        
+        io.emit('message', message);
+        console.log(`💬 ${user.displayName}: ${data.text.substring(0, 50)}...`);
+    });
+    
+    // Отключение
+    socket.on('disconnect', () => {
+        const user = users.get(socket.id);
+        if (user) {
+            users.delete(socket.id);
+            io.emit('userLeft', user);
+            console.log(`👋 Отключился: ${user.displayName}`);
+        }
+    });
+});
 
-// Вспомогательные функции
-function updateStatus(text, type) {
-    const status = document.getElementById('status');
-    status.textContent = text;
-    status.style.color = type === 'success' ? '#00ffaa' : '#ff5555';
-}
-
-function getRandomColor() {
-    const colors = ['#0066ff', '#00d4ff', '#00ffaa', '#ff6b9d', '#ffaa00'];
-    return colors[Math.floor(Math.random() * colors.length)];
-}
-
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-// Автовход для теста
-if (window.location.hostname === 'localhost') {
-    document.getElementById('username').value = 'Тест' + Math.floor(Math.random() * 1000);
-    setTimeout(login, 1000);
-}
+// ========== ЗАПУСК ==========
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, '0.0.0.0', () => {
+    console.log('='.repeat(50));
+    console.log(`🚀 Сервер запущен на порту ${PORT}`);
+    console.log(`📡 WebSocket доступен на: ws://localhost:${PORT}`);
+    console.log(`🌐 HTTP доступен на: http://localhost:${PORT}`);
+    console.log('='.repeat(50));
+    
+    // Проверка зависимостей
+    console.log('🔍 Проверка зависимостей:');
+    try {
+        const packageJson = require('./package.json');
+        console.log(`✅ Package: ${packageJson.name} v${packageJson.version}`);
+        console.log(`✅ Dependencies: ${Object.keys(packageJson.dependencies || {}).length}`);
+    } catch (e) {
+        console.log('⚠️ package.json не найден или поврежден');
+    }
+});
