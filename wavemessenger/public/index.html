@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WaveMessenger - Общение в реальном времени</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <!-- Приветственная страница -->
+    <div id="welcomePage" class="page active">
+        <div class="welcome-container">
+            <div class="logo">
+                <i class="fas fa-water"></i>
+                <h1>WaveMessenger</h1>
+            </div>
+            
+            <div class="tagline">
+                <h2>Общайтесь волнами в реальном времени</h2>
+                <p>Новый мессенджер с каналами, постами и настоящим общением между пользователями</p>
+            </div>
+            
+            <div class="features">
+                <div class="feature">
+                    <i class="fas fa-bolt"></i>
+                    <h3>Мгновенные сообщения</h3>
+                    <p>Общайтесь в реальном времени с друзьями</p>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-users"></i>
+                    <h3>Каналы</h3>
+                    <p>Создавайте тематические каналы для общения</p>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-newspaper"></i>
+                    <h3>Лента постов</h3>
+                    <p>Публикуйте и комментируйте посты</p>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-mobile-alt"></i>
+                    <h3>Для телефонов</h3>
+                    <p>Полностью адаптирован для мобильных устройств</p>
+                </div>
+            </div>
+            
+            <div class="auth-buttons">
+                <button class="btn btn-primary" onclick="showRegister()">
+                    <i class="fas fa-user-plus"></i> Начать бесплатно
+                </button>
+                <button class="btn btn-secondary" onclick="showLogin()">
+                    <i class="fas fa-sign-in-alt"></i> Войти
+                </button>
+            </div>
+            
+            <div class="reviews">
+                <h3>Что говорят пользователи</h3>
+                <div class="review">
+                    <p>"Лучший мессенджер для общения в реальном времени! Простой и удобный."</p>
+                    <span>- Алексей, Москва</span>
+                </div>
+                <div class="review">
+                    <p>"Отлично работает на телефоне. Каналы очень удобны для группового общения."</p>
+                    <span>- Мария, СПб</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Форма регистрации -->
+    <div id="registerPage" class="page">
+        <div class="auth-container">
+            <button class="back-btn" onclick="showWelcome()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            
+            <div class="logo">
+                <i class="fas fa-water"></i>
+                <h2>Регистрация</h2>
+            </div>
+            
+            <div class="form-group">
+                <label for="regUsername">Юзернейм</label>
+                <input type="text" id="regUsername" placeholder="например, alex2023" maxlength="20">
+                <div class="hint">Только латинские буквы и цифры</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="regDisplayName">Отображаемое имя</label>
+                <input type="text" id="regDisplayName" placeholder="Ваше имя для других">
+            </div>
+            
+            <div class="form-group">
+                <label for="regPassword">Пароль</label>
+                <input type="password" id="regPassword" placeholder="Минимум 6 символов">
+            </div>
+            
+            <button class="btn btn-primary btn-block" onclick="register()">
+                <i class="fas fa-user-plus"></i> Создать аккаунт
+            </button>
+            
+            <div class="auth-footer">
+                Уже есть аккаунт? <a href="#" onclick="showLogin()">Войти</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Форма входа -->
+    <div id="loginPage" class="page">
+        <div class="auth-container">
+            <button class="back-btn" onclick="showWelcome()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            
+            <div class="logo">
+                <i class="fas fa-water"></i>
+                <h2>Вход</h2>
+            </div>
+            
+            <div class="form-group">
+                <label for="loginUsername">Юзернейм</label>
+                <input type="text" id="loginUsername" placeholder="Ваш юзернейм">
+            </div>
+            
+            <div class="form-group">
+                <label for="loginPassword">Пароль</label>
+                <input type="password" id="loginPassword" placeholder="Ваш пароль">
+            </div>
+            
+            <button class="btn btn-primary btn-block" onclick="login()">
+                <i class="fas fa-sign-in-alt"></i> Войти
+            </button>
+            
+            <div class="auth-footer">
+                Нет аккаунта? <a href="#" onclick="showRegister()">Зарегистрироваться</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Основное приложение -->
+    <div id="appPage" class="page">
+        <!-- Верхняя панель -->
+        <div class="top-bar">
+            <button class="menu-toggle" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <div class="logo-small">
+                <i class="fas fa-water"></i>
+                <span>Wave</span>
+            </div>
+            
+            <div class="user-info" onclick="toggleProfileMenu()">
+                <div class="avatar" id="userAvatar">U</div>
+                <span id="userName"></span>
+            </div>
+        </div>
+        
+        <!-- Боковое меню -->
+        <div class="sidebar" id="sidebar">
+            <div class="nav-menu">
+                <a href="#" class="nav-item active" onclick="showSection('feed')">
+                    <i class="fas fa-home"></i>
+                    <span>Лента</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('chat')">
+                    <i class="fas fa-comments"></i>
+                    <span>Сообщения</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('channels')">
+                    <i class="fas fa-hashtag"></i>
+                    <span>Каналы</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('search')">
+                    <i class="fas fa-search"></i>
+                    <span>Поиск</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('online')">
+                    <i class="fas fa-users"></i>
+                    <span>Онлайн <span id="onlineCount">0</span></span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('profile')">
+                    <i class="fas fa-user"></i>
+                    <span>Профиль</span>
+                </a>
+                <a href="#" class="nav-item" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Выйти</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Основной контент -->
+        <div class="main-content">
+            <!-- Лента -->
+            <div class="section active" id="feedSection">
+                <div class="post-creator">
+                    <textarea id="postInput" placeholder="Что нового?" rows="3"></textarea>
+                    <button class="btn btn-primary" onclick="createPost()">
+                        <i class="fas fa-paper-plane"></i> Опубликовать
+                    </button>
+                </div>
+                
+                <div id="postsContainer">
+                    <div class="loading">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Загрузка постов...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Сообщения -->
+            <div class="section" id="chatSection">
+                <div class="chat-header">
+                    <h3>Общий чат</h3>
+                    <span id="chatOnline">0 онлайн</span>
+                </div>
+                
+                <div id="messagesContainer">
+                    <div class="empty-state">
+                        <i class="fas fa-comments"></i>
+                        <p>Начните общение!</p>
+                    </div>
+                </div>
+                
+                <div class="message-input">
+                    <input type="text" id="messageInput" placeholder="Введите сообщение...">
+                    <button class="btn btn-primary" onclick="sendMessage()">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Каналы -->
+            <div class="section" id="channelsSection">
+                <div class="section-header">
+                    <h3>Каналы</h3>
+                    <button class="btn btn-secondary" onclick="showNewChannelModal()">
+                        <i class="fas fa-plus"></i> Новый
+                    </button>
+                </div>
+                
+                <div id="channelsContainer">
+                    <div class="channel">
+                        <div class="channel-info">
+                            <i class="fas fa-hashtag"></i>
+                            <div>
+                                <h4>general</h4>
+                                <p>Основной канал для общения</p>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="joinChannel('general')">
+                            Присоединиться
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Поиск -->
+            <div class="section" id="searchSection">
+                <div class="search-box">
+                    <input type="text" placeholder="Поиск пользователей..." id="userSearch">
+                    <button class="btn btn-primary" onclick="searchUsers()">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                
+                <div id="searchResults">
+                    <!-- Результаты поиска -->
+                </div>
+            </div>
+            
+            <!-- Онлайн -->
+            <div class="section" id="onlineSection">
+                <h3>Сейчас онлайн</h3>
+                <div id="onlineUsersList">
+                    <!-- Список онлайн пользователей -->
+                </div>
+            </div>
+            
+            <!-- Профиль -->
+            <div class="section" id="profileSection">
+                <div id="profileContent">
+                    <!-- Профиль пользователя -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Мобильное меню -->
+        <div class="bottom-nav">
+            <button class="nav-btn active" onclick="showSection('feed')">
+                <i class="fas fa-home"></i>
+                <span>Лента</span>
+            </button>
+            <button class="nav-btn" onclick="showSection('chat')">
+                <i class="fas fa-comments"></i>
+                <span>Чат</span>
+            </button>
+            <button class="nav-btn" onclick="showSection('channels')">
+                <i class="fas fa-hashtag"></i>
+                <span>Каналы</span>
+            </button>
+            <button class="nav-btn" onclick="showSection('profile')">
+                <i class="fas fa-user"></i>
+                <span>Профиль</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Модальное окно нового канала -->
+    <div class="modal" id="newChannelModal">
+        <div class="modal-content">
+            <h3>Создать канал</h3>
+            <div class="form-group">
+                <input type="text" id="channelName" placeholder="Название канала">
+            </div>
+            <div class="form-group">
+                <textarea id="channelDesc" placeholder="Описание" rows="3"></textarea>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-primary" onclick="createChannel()">Создать</button>
+                <button class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Уведомления -->
+    <div id="notification" class="notification">
+        <div id="notificationText"></div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
